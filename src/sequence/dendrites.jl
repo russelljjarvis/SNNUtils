@@ -11,7 +11,8 @@ n_tripods : number of tripods
 
 stim : stimulus properties
 """
-function dendritic_connections(type::String, n_tripods::Int64, stim::StimParams)
+
+function dendritic_connections(type::String, n_tripods::Int64, stim::AbstractStimParams)
     connections = Vector{Vector{Int64}}()
     dendrites = Vector{Array{Float32,2}}()
     for sym in 1:stim.symbols

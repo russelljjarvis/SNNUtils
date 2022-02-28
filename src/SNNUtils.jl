@@ -4,12 +4,15 @@ module SNNUtils
 
 	include("unit.jl")
 	include("util.jl")
-	include("structs.jl")
+	include("params.jl")
 	include("dendrites.jl")
-	include("STDP_rules.jl")
-	include("synapses.jl")
-	include("weights.jl")
 	include("protocols.jl")
+	include("synapses/base.jl")
+	include("connections/base.jl")
+	include("learning/base.jl")
+	include("sequence/base.jl")
+	include("IO/base.jl")
+
 
 
 	using Requires

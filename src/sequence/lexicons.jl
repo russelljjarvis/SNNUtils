@@ -10,10 +10,10 @@ function simple_words()
 	return words, rules
 end
 
-function lkd2014_generator()
+function lkd2014_generator(n)
 	words = Dict()
 	rules = Dict()
-	for n in 1:20
+	for n in 1:n
 			word = "w_$n"
 			phs  = [n]
 			push!(words,word=>phs)
@@ -76,25 +76,33 @@ end
 using Serialization
 
 ##
-words, rules = lkd2014_generator()
-serialize(joinpath(@__DIR__, "lkd.dict"), words)
-serialize(joinpath(@__DIR__, "lkd.rules"), rules)
 
-words, rules = simple_words()
-serialize(joinpath(@__DIR__, "simple.dict"), words)
-serialize(joinpath(@__DIR__, "simple.rules"), rules)
+function create_lexicon(;name::String, words, rules)
+	serialize(joinpath(dic_path, "$name.dict"), words)
+	serialize(joinpath(dic_path, "$name.rules"), rules)
+end
+function create_lexicons()
+	data = dic_path
+	words, rules = lkd2014_generator()
+	serialize(joinpath(data, "lkd.dict"), words)
+	serialize(joinpath(data, "lkd.rules"), rules)
 
-words, rules =  unique_words(string.(collect("A"[1]:"Z"[1])))
-serialize(joinpath(@__DIR__, "unique.dict"), words)
-serialize(joinpath(@__DIR__, "unique.rules"), rules)
+	words, rules = simple_words()
+	serialize(joinpath(data, "simple.dict"), words)
+	serialize(joinpath(data, "simple.rules"), rules)
 
-words, rules =  non_unique_words(string.(collect("A"[1]:"Z"[1])))
-serialize(joinpath(@__DIR__, "non_unique.dict"), words)
-serialize(joinpath(@__DIR__, "non_unique.rules"), rules)
+	words, rules =  unique_words(string.(collect("A"[1]:"Z"[1])))
+	serialize(joinpath(data, "unique.dict"), words)
+	serialize(joinpath(data, "unique.rules"), rules)
 
-words, rules = palyndromes(string.(collect("A"[1]:"Z"[1])))
-serialize(joinpath(@__DIR__, "palyndromes.dict"), words)
-serialize(joinpath(@__DIR__, "palyndromes.rules"), rules)
+	words, rules =  non_unique_words(string.(collect("A"[1]:"Z"[1])))
+	serialize(joinpath(data, "non_unique.dict"), words)
+	serialize(joinpath(data, "non_unique.rules"), rules)
 
-words = random_dict()
-serialize(joinpath(@__DIR__, "random.dict"), words)
+	words, rules = palyndromes(string.(collect("A"[1]:"Z"[1])))
+	serialize(joinpath(data, "palyndromes.dict"), words)
+	serialize(joinpath(data, "palyndromes.rules"), rules)
+
+	words = random_dict()
+	serialize(joinpath(data, "random.dict"), words)
+end

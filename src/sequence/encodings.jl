@@ -1,4 +1,4 @@
-function seq_encoder(net::NetParams, stim::StimParams)
+function seq_encoder(net::AbstractNetParams, stim::AbstractStimParams)
     """
     Create the sequence encoder for the network:
         1. Create target sub-populations of 'density*n_tripods' for each symbol.
@@ -7,7 +7,8 @@ function seq_encoder(net::NetParams, stim::StimParams)
         The stimulus is mediated by the 'input cells', all cells
             and from the 'n_symbols' dictionary
     """
-	dictionary = deserialize(joinpath(@__DIR__,"dictionaries",stim.dictionary*".dict"))
+	dictionary = deserialize(joinpath(dic_path,stim.dictionary*".dict"))
+	@show dictionary
 	words = []
 	phonemes=[]
 	seq_length = 0
@@ -21,7 +22,7 @@ function seq_encoder(net::NetParams, stim::StimParams)
 		phs  = entry[2]
 		push!(lemmas, word=>phs)
 		for ph in phs
-			if seq_length +1 < stim.seq_length 
+			if seq_length < stim.seq_length
 				push!(phonemes,ph)
 				push!(words,word)
 				seq_length +=1
@@ -78,7 +79,7 @@ function seq_encoder(net::NetParams, stim::StimParams)
     return SeqEncoding(connections, dendrites, sequence, mapping, lemmas, null)#, pop_to_symbol, symbol_to_pop)
 end
 
-function randomize_sequence(seq::SeqEncoding, stim::StimParams)
+function randomize_sequence(seq::SeqEncoding, stim::AbstractStimParams)
     """
 	Get a sequence and produce a new random sequence with the same words and
 	the length defined in the stimulus parameters
@@ -134,7 +135,7 @@ function randomize_sequence(seq::SeqEncoding, stim::StimParams)
     return SeqEncoding(populations, dendrites, sequence, mapping, lemmas, null)
 end
 
-function null_sequence(seq::SeqEncoding, stim::StimParams)
+function null_sequence(seq::SeqEncoding, stim::AbstractStimParams)
     """
 	Get a sequence and produce a new random sequence with the same words and
 	the length defined in the stimulus parameters
@@ -167,3 +168,5 @@ end
 function get_words(seq::SeqEncoding)
 	sort!(collect(Set(seq.sequence[1,:])))
 end
+
+export get_phonemes, get_words, seq_encoder

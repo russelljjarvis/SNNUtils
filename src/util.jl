@@ -79,6 +79,7 @@ end
     x *= x; x *= x; x *= x; x *= x; x *= x
     return x
 end
+export exp32
 
 @inline function exp256(x::Float32)
     x = ifelse(x < -10f0, -256f0, x)
@@ -87,6 +88,7 @@ end
     x *= x; x *= x; x *= x; x *= x
     return x
 end
+export exp256
 
 macro symdict(x...)
     ex = Expr(:block)
