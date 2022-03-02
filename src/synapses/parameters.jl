@@ -144,7 +144,7 @@ function duarte_pv_synapses()
 
 end
 
-function duart_sst_synapses()
+function duarte_sst_synapses()
     E_exc    =  0.00       #(mV) Excitatory reversal potential
     E_gabaA   = -75       #(mV) GABA_A reversal potential
     E_gabaB   = -90      #(mV) GABA_B reversal potential

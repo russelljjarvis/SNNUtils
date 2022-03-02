@@ -1,62 +1,48 @@
 function lkd_stdp()
-      altd = .0008 #ltd strength (pF/mV) # a*(V-θ) = weight
-      altp = .0014 #ltp strength (pF/mV)
-      # thetaltd = -70.0 #ltd voltage threshold (mV)
-      # thetaltp = -49.0 #ltp voltage threshold (mV)
-      thetaltd = -70.0 #ltd voltage threshold (mV)
-      thetaltp = -49.0 #ltp voltage threshold (mV)
-
-      tauu = 10.0 #timescale for u variable   (ms)
-      tauv = 7.0  #timescale for v variable   (ms)
-      taux = 15.0 #timescale for x variable   (ms)
-      tau1    = 5.   # filter for delayed voltage
-
-      jeemin = 1.78 #minimum ee strength (pF)  pF/ms = nS #xerise/difEtau = ge
-      jeemax = 21.4 #maximum ee strength (pF)
-      return STDP(altd, altp, thetaltd, thetaltp, 1/tauu, 1/tauv, 1/taux, 1/tau1, jeemin, jeemax)
+      return STDP(
+      a⁻ = 8.f-4pF/mV,  #ltd strength
+      a⁺ = 14.f-4pF/mV, #ltp strength
+      θ⁻ = -70.f0mV,  #ltd voltage threshold
+      θ⁺ = -49.f0mV,  #ltp voltage threshold
+      τu = 10.f0ms,  #timescale for u variable
+      τv = 7.f0ms,  #timescale for v variable
+      τx = 15.f0ms,  #timescale for x variable
+      τ1 = 5ms,    # filter for delayed voltage
+      j⁻ = 1.7f8pF,  #minimum ee strength
+      j⁺ = 21.f4pF   #maximum ee strength
+      )
 end
 
 function clopath_vstdp_visualcortex()
-      altd = 14e-5/2.5 #ltd strength (pF/mV) # a*(V-θ) = weight
-      altp = 8e-5/2.5 #ltp strength (pF/mV)
-      thetaltd = -70.6 #ltd voltage threshold (mV)
-      thetaltp = -25.3 #ltp voltage threshold (mV)
-
-      tauu = 10.0 #timescale for u variable   (ms) τ⁻
-      tauv = 7.0  #timescale for v variable   (ms) τ⁺
-      taux = 15.0 #timescale for x variable   (ms)
-      ϵ    = 1.   # filter for delayed voltage
-
-      jeemin = 1.78 #minimum ee strength (pF)  pF/ms = nS #xerise/difEtau = ge
-      jeemax = 21.4 #maximum ee strength (pF)
-
-      return STDP(altd, altp, thetaltd, thetaltp, 1/tauu, 1/tauv, 1/taux, ϵ, jeemin, jeemax)
+      return STDP(
+      a⁻ = 14.f-3pF/mV,  #ltd strength
+      a⁺ = 8.f-3pF/mV, #ltp strength
+      θ⁻ = -70.6mV,  #ltd voltage threshold
+      θ⁺ = -25.3mV,  #ltp voltage threshold
+      τu = 10.0ms,  #timescale for u variable
+      τv = 7.0ms,  #timescale for v variable
+      τx = 15.0ms,  #timescale for x variable
+      ϵ  = 1ms,    # filter for delayed voltage
+      j⁻ = 1.78pF,  #minimum ee strength
+      j⁺ = 21.4pF   #maximum ee strength
+      )
 
 end
 
 function bono_vstdp()
-      altd = 4.f-4 #ltd strength (pF/mV) # a*(V-θ) = weight
-      altp = 14.f-4 #ltp strength (pF/mV)
-      thetaltd = -59.0 #ltd voltage threshold (mV)
-      thetaltp = -20.0 #ltp voltage threshold (mV)
-
-      tauu = 15.0 #timescale for u variable   (ms) τ⁻
-      tauv = 45.0  #timescale for v variable   (ms) τ⁺
-      taux = 20.0 #timescale for x variable   (ms)
-      tau1 = 5.   # filter for delayed voltage
-
-      jeemin = 1.78 #minimum ee strength (pF)  pF/ms = nS #xerise/difEtau = ge
-      jeemax = 21.4 #maximum ee strength (pF)
-
-      return STDP(altd, altp, thetaltd, thetaltp, 1/tauu, 1/tauv, 1/taux, 1/tau1, jeemin, jeemax)
-
+      return STDP(
+      a⁻ = 4.f-4pF/mV,  #ltd strength
+      a⁺ = 14.f-4pF/mV, #ltp strength
+      θ⁻ = -59.0mV,  #ltd voltage threshold
+      θ⁺ = -20.0mV,  #ltp voltage threshold
+      τu = 15.0ms,  #timescale for u variable
+      τv = 45.0ms,  #timescale for v variable
+      τx = 20.0ms,  #timescale for x variable
+      τ1 = 5ms,    # filter for delayed voltage
+      j⁻ = 1.78pF,  #minimum ee strength
+      j⁺ = 21.4pF   #maximum ee strength
+      )
 end
-
-soma_stdp  = lkd_stdp()
-dend_stdp  = bono_vstdp()
-bono_stdp  = bono_vstdp()
-
-
 
 
 

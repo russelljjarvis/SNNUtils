@@ -1,7 +1,7 @@
 module SNNUtils
 
 	using Parameters
-
+	include("structs.jl")
 	include("unit.jl")
 	include("util.jl")
 	include("params.jl")

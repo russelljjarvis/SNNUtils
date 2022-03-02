@@ -1,46 +1,56 @@
 # Clopath 2010
-struct STDP
+@with_kw struct STDP
       #voltage based stdp
-      a⁻::Float64    #ltd strength (pF/mV) # a*(V-θ) = weight
-      a⁺::Float64    #ltp strength (pF/mV)
-      θ⁻::Float64 #ltd voltage threshold (mV)
-      θ⁺::Float64 #ltp voltage threshold (mV)
-      τu⁻::Float64  #timescale for u variable   (1/ms)
-      τv⁻::Float64  #timescale for v variable   (1/ms)
-      τx⁻::Float64  #timescale for x variable   (1/ms)
-      ϵ::Float64  # filter for delayed membrane potential.
-      j⁻::Float64  # minimum weight
-      j⁺::Float64  # maximum weight
+      a⁻::Float32 = 0.f0    #ltd strength (pF/mV) # a*(V-θ) = weight
+      a⁺::Float32 = 0.f0    #ltp strength (pF/mV)
+      θ⁻::Float32 = -90.f0 #ltd voltage threshold (mV)
+      θ⁺::Float32 = 0.f0 #ltp voltage threshold (mV)
+      τu::Float32 = 1.f0  #timescale for u variable   (1/ms)
+      τv::Float32 = 1.f0  #timescale for v variable   (1/ms)
+      τx::Float32 = 1.f0  #timescale for x variable   (1/ms)
+      τ1::Float32 = 1.f0
+      ϵ::Float32  = 1.f0  # filter for delayed membrane potential.
+      j⁻::Float32 = 0.f0 # minimum weight
+      j⁺::Float32 = 100.f0 # maximum weight
+      τu⁻::Float32= 1/τu  #timescale for u variable   (1/ms)
+      τv⁻::Float32= 1/τv  #timescale for v variable   (1/ms)
+      τx⁻::Float32= 1/τx  #timescale for x variable   (1/ms)
+      τ1⁻::Float32= 1/τ1
 
 end
 
 #Vogel 2011
 #inhibitory stdp
 struct ISTDP
-      τy::Float64
-      η::Float64
-      r0::Float64
-      α::Float64
-      j⁻::Float64  # minimum weight
-      j⁺::Float64  # maximum weight
+      τy::Float32
+      η::Float32
+      r0::Float32
+      α::Float32
+      j⁻::Float32  # minimum weight
+      j⁺::Float32  # maximum weight
+      # τy⁻::Float32
 end
 
 struct TripletRule
-      A⁺₂::Float64
-      A⁺₃::Float64
-      A⁻₂::Float64
-      A⁻₃::Float64
-      τˣ::Float64
-      τʸ::Float64
-      τ⁺::Float64
-      τ⁻::Float64
+      A⁺₂::Float32
+      A⁺₃::Float32
+      A⁻₂::Float32
+      A⁻₃::Float32
+      τˣ::Float32
+      τʸ::Float32
+      τ⁺::Float32
+      τ⁻::Float32
+      # τˣ⁻::Float32
+      # τʸ⁻::Float32
+      # τ⁺⁻::Float32
+      # τ⁻⁻::Float32
 end
 
 # Gutig 2003
 struct NLTAH
-      τ::Float64
-      λ::Float64
-      μ::Float64
+      τ::Float32
+      λ::Float32
+      μ::Float32
 end
 
-export NLTAH, ISTDP, STDP, TripletRule 
+export NLTAH, ISTDP, STDP, TripletRule

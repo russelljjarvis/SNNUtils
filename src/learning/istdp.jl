@@ -10,5 +10,3 @@ function vogels_istdp()
 
       return ISTDP(tauy, eta, r0, alpha, jeimin, jeimax)
 end
-
-istdp = vogels_istdp()

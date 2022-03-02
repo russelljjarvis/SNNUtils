@@ -18,7 +18,7 @@ const uA = ampere / 1e6
 const nA = ampere / 1e9
 const pA = ampere / 1e12
 
-const farad=1e6
+const farad=1e12
 const uF = farad/1e6
 const pF = farad/1e12
 const ufarad = uF

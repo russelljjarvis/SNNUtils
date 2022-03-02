@@ -1,52 +1,55 @@
-function save_network_weights(W::AbstractWeights, T::Float32, rd::String, filename::String="Weights_" )
-	compression =1
-    filename = abspath(joinpath(rd,filename*"$T.h5")) #absolute path #somehow the location gets weird for this one..
+
+function save(W::Weights, T::Float32, rd::String)
+    filename = abspath(joinpath(rd,"Weights_$T.h5"))
     fid = h5open(filename,"w")
-	for name in fieldnames(typeof(W))
-	    fid[string(name)] = getfield(W, name)
+	for name in fieldnames(W)
+	    fid[string(name)] = getproperty(W, name)
 	end
+	fid["tt"] = T
     close(fid)
-    nothing
+    return nothing
 end
 
-function save_tracker(tracker::AbstractTracker, T::Float32, rd::String)
-	compression =1
-    filename = abspath(joinpath(rd,"tracker_$T.h5")) #absolute path #somehow the location gets weird for this one..
+function save(tracker::AbstractTracker, T::Float32, rd::String)
+    filename = abspath(joinpath(rd,"Tracker_$T.h5"))
     fid = h5open(filename,"w")
 	for name in fieldnames(typeof(tracker))
 	    fid[string(name)] = getfield(tracker, name)
 	end
+	fid["tt"] = T
 	close(fid)
+	return nothing
 end
 
-
-function save_network_states(currents::Array{Float32,2},membranes::Array{Float32,2},labels::Array{Int64,2}, T::Float32,rd::String,compression = 1)
-    filename = abspath(rd*"/State_$T.h5") #absolute path #somehow the location gets weird for this one..
+function save(datatype::SNNDataTypes, T::Float32,rd::String; kwargs...)
+	name = string(datatype)
+    filename = abspath(joinpath(rd,"$name_$T.h5"))
     fid = h5open(filename,"w")
-    fid["membranes"] = membranes
-	fid["currents"] = currents
-	fid["labels"] = labels
+	for n in keys(kwargs)
+		fid[n] = kwargs[n]
+	end
 	fid["tt"] = T
     close(fid)
-    nothing
-end
-
-function save_network_rates(rates::Matrix{Float32}, T::Float32,rd::String,compression = 1)
-    filename = abspath(rd*"/Rate_$T.h5")
-    fid = h5open(filename,"w")
-    fid["exc"] = rates[1,:]
-	fid["sst"] = rates[2,:]
-	fid["pv"] =  rates[3,:]
-	fid["tt"] = T
-    close(fid)
-    nothing
-end
-
-function save_network_spikes(exc::Spiketimes, sst::Spiketimes, pv::Spiketimes, T::Float32,rd::String,compression = 1)
-    filename = abspath(rd*"/Spikes_$T.jld")
-	bson(filename, exc=exc, sst=sst, pv=pv, tt=T)
-    nothing
+    return nothing
 end
 
 
-export save_network_weights, save_network_rates, save_network_spikes, save_network_states, save_network_trackers
+export save
+# _network_weights, save_network_rates, save_network_spikes, save_network_states, save_network_trackers
+# function save_network_spikes(datatype::Spikes, T::Float32,rd::String,compression = 1; kwargs...)
+# 	name = string(datatype)
+#     filename = abspath(joinpath(rd,"$name_$T.bson")
+# 	bson(filename; tt=T, kwargs...)
+#     return nothing
+# end
+#
+# function save_network_rates(T::Float32,rd::String,compression = 1; kwargs...)
+#     filename = abspath(rd*"/rate_$T.h5")
+#     fid = h5open(filename,"w")
+# 	for n in keys(kwargs)
+# 		fid[n] = kwargs[n]
+# 	end
+# 	fid["tt"] = T
+#     close(fid)
+#     nothing
+# end
