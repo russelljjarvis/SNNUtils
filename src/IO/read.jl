@@ -1,6 +1,7 @@
 function load(datatype::DataType, rd::String, tt0::Real=-1)
 	data  = Vector{SNNData{datatype}}()
 	name  = string(datatype)
+	@show name
 	for file_ in readdir(rd)
 		if startswith(file_,name) && endswith(file_,"h5")
 		    filename = joinpath(rd,file_)
@@ -24,7 +25,7 @@ function read(data::SNNData)
 		elseif endswith(data.file, "bson")
 			fid = BSON.load(data.file)
 		end
-		d = Dict{Symbol,Array}()
+		d = Dict{Symbol,Any}()
 		for name in keys(fid)
 			(name !== "tt") && (push!(d, Symbol(name)=>fid[name]))
 		end
@@ -41,7 +42,7 @@ function read!(data::SNNData)
 		elseif endswith(data.file, "bson")
 			fid = BSON.load(data.file)
 		end
-		d = Dict{Symbol,Array}()
+		d = Dict{Symbol,Any}()
 		for name in keys(fid)
 			(name !== "tt") && (push!(d, Symbol(name)=>fid[name]))
 		end

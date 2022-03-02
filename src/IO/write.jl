@@ -1,8 +1,7 @@
-
-function save(W::Weights, T::Float32, rd::String)
+function save(W::NamedTuple, T::Float32, rd::String)
     filename = abspath(joinpath(rd,"Weights_$T.h5"))
     fid = h5open(filename,"w")
-	for name in fieldnames(W)
+	for name in fieldnames(typeof(W))
 	    fid[string(name)] = getproperty(W, name)
 	end
 	fid["tt"] = T
@@ -21,15 +20,20 @@ function save(tracker::AbstractTracker, T::Float32, rd::String)
 	return nothing
 end
 
-function save(datatype::SNNDataTypes, T::Float32,rd::String; kwargs...)
+function save(datatype::DataType, T::Float32,rd::String; kwargs...)
 	name = string(datatype)
-    filename = abspath(joinpath(rd,"$name_$T.h5"))
-    fid = h5open(filename,"w")
-	for n in keys(kwargs)
-		fid[n] = kwargs[n]
+	if datatype == Spikes
+	    filename = abspath(joinpath(rd,"$(name)_$T.bson"))
+		bson(filename; kwargs...)
+	else
+	    filename = abspath(joinpath(rd,"$(name)_$T.h5"))
+	    fid = h5open(filename,"w")
+		for n in keys(kwargs)
+			fid[string(n)] = kwargs[n]
+		end
+		fid["tt"] = T
+	    close(fid)
 	end
-	fid["tt"] = T
-    close(fid)
     return nothing
 end
 

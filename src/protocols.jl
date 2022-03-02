@@ -1,4 +1,4 @@
-function get_poisson_spikes(; rate::Float32, dt::Float32=dt)
+function get_poisson_spikes(; rate::Float32, dt::Float32=0.1f0)
     ### rate in KHz
 	if rate*dt > rand()
 		return 1.f0

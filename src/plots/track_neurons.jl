@@ -5,12 +5,12 @@
 default(grid=true, guidefontsize=6, legendfontsize=5, titlefontsize=7)
 
 
-function plot_voltage(trackers::Vector{NNTracker}, seq::SeqEncoding, timeframe; index::Int=1, dt=0.1)
+function plot_voltage(trackers::Vector{SNNData{Tracker}}, seq::SeqEncoding, timeframe; index::Int=1, dt=0.1)
 	return plot_voltage(read(trackers[timeframe]), seq; index=index, dt=dt)
 end
 
-function plot_voltage(tracker::Tracker, seq::SeqEncoding; index::Int=1, dt=0.1)
-	@unpack voltage, stimuli, track_neurons, interval= tracker
+function plot_voltage(tracker::SNNData{Tracker}, seq::SeqEncoding; index::Int=1, dt=0.1)
+	@unpack voltage, stimuli, track_neurons, interval= read(tracker)
 	nn = index
 	xs = interval[1]:dt:interval[2]
 	p_tripod = let
@@ -46,8 +46,8 @@ function plot_voltage(tracker::Tracker, seq::SeqEncoding; index::Int=1, dt=0.1)
 	end
 	return p_tripod
 end
-function plot_conductance(tracker::Tracker, seq::SeqEncoding; interval::Tuple, index::Int=1)
-	@unpack gs, g1, g2, currents, track_neurons = tracker
+function plot_conductance(tracker::SNNData{Tracker}, seq::SeqEncoding; interval::Tuple, index::Int=1)
+	@unpack gs, g1, g2, currents, track_neurons = read(tracker)
 	nn = index
 	p2 = begin
 		plot()
@@ -80,6 +80,8 @@ function plot_conductance(tracker::Tracker, seq::SeqEncoding; interval::Tuple, i
 	end
 	ss = plot(p2,p3, layout=(2,1), tickfontsize=4)
 end
+
+export plot_voltage, plot_conductance
 #
 # 	p_inh = begin
 # 		nnI = length(track_neurons)-1

@@ -4,7 +4,7 @@ function get_connections(W::Weights)
     d = Dict()
     d_inv = Dict()
     for name in fieldnames(W)
-        push!(d    , name= get_connections(getproperty(W,name)))
+        push!(d    , name=> get_connections(getproperty(W,name)))
         push!(d_inv, name=>get_connections(getproperty(W,name), inverse=true))
     end
     return (;d...)
