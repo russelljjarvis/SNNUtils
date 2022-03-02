@@ -58,7 +58,7 @@ recurrent_network
 """
 function recurrent_network(;cells, connections)
 	@unpack params, map = connections
-	ws = Dict(Symbol, Matrix{Flaot32})
+	ws = Dict{Symbol, Matrix{Float32}}()
 	for (out_, in_, _name, ρ, μ, σ) in map
 		_in = getfield(cells,in_)
 		_out = getfield(cells,out_)
