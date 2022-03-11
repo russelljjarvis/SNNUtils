@@ -6,9 +6,14 @@
 	_read::Bool=false
 end
 
-export SNNData, States, Spikes, Rates, Weights, Spiketimes
-export SNNDataTypes, AbstractTracker
 
+function Base.getproperty(mnt::SNNData, sym::Symbol)
+	if (sym in fieldnames(SNNData))
+		return getfield(mnt, sym)
+    else
+       return getfield(getfield(mnt,:data), sym)
+   end
+end
 
 
 ##

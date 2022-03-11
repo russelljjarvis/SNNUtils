@@ -76,7 +76,7 @@ function seq_encoder(net::AbstractNetParams, stim::AbstractStimParams)
 
 	## Set null connections to the null symbol
 	connections[null] = []
-    return SeqEncoding(connections, dendrites, sequence, mapping, lemmas, null)#, pop_to_symbol, symbol_to_pop)
+    return SeqEncoding(populations=connections, dendrites=dendrites, sequence=sequence, mapping=mapping, lemmas=lemmas, duration=stim.duration, null=null)#, pop_to_symbol, symbol_to_pop)
 end
 
 function randomize_sequence(seq::SeqEncoding, stim::AbstractStimParams)

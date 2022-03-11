@@ -52,30 +52,32 @@ module MyUnits
 	end
 end
 
-Dendrite = NamedTuple{(:gm, :gax, :C, :l, :d), NTuple{5, Float32}}
+Dendrite = NamedTuple{(:gm, :gax, :C, :E_r, :l, :d), NTuple{6, Float32}}
 Dendrites = Tuple{Vector{Dendrite}, Vector{Dendrite}}
 export Dendrite, Dendrites
 
-function create_dendrite(l::Real, d=4.f0::Float32, T=Float32)
+function create_dendrite(l::Int64, d=4.f0::Float32, T=Float32)
 	g_m, g_ax, _C = MyUnits.get_dendrite(l=l, d=d)
-	return (gm=T(g_m), gax=T(g_ax), C=T(_C), l=T(l), d=T(d))
+	return (gm=T(g_m), gax=T(g_ax), C=T(_C), E_r=T(-70.6mV), l=T(l), d=T(d))
 end
 
-function create_dendrites(ls::Vector{Real}, d=4.f0, T=Float32)
-	g_ms = Vector{Float32}()
-	g_axs = Vector{Float32}()
-	Cs = Vector{Float32}()
-	ls = Vector{Float32}()
-	ds = Vector{Float32}()
-	for l in ls
-		g_m, g_ax, C = MyUnits.get_dendrite(l=l, d=d)
-		push!(g_ms,g_m)
-		push!(g_axs,g_ax)
-		push!(Cs,C)
-		push!(ds,d)
-	end
-	return (gm=T.(g_ms), gax=T.(g_axs), C=T.(Cs), l=T.(ls), d=T.(ds))
-end
+# function create_dendrites(ls::Vector{Real}, d=4.f0, T=Float32)
+# 	g_ms = Vector{Float32}()
+# 	g_axs = Vector{Float32}()
+# 	Cs = Vector{Float32}()
+# 	Cs⁻ = Vector{Float32}()
+# 	ls = Vector{Float32}()
+# 	ds = Vector{Float32}()
+# 	for l in ls
+# 		g_m, g_ax, C = MyUnits.get_dendrite(l=l, d=d)
+# 		push!(g_ms,g_m)
+# 		push!(g_axs,g_ax)
+# 		push!(Cs,C)
+# 		push!(Cs⁻,1/C)
+# 		push!(ds,d)
+# 	end
+# 	return (g_m=T.(g_ms), g_ax=T.(g_axs), C=T.(Cs), C⁻=T.(Cs⁻), l=T.(ls), d=T.(ds))
+# end
 
 
 function dend_parser(model::String)

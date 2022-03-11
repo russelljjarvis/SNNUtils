@@ -56,19 +56,20 @@ end
 """
 recurrent_network
 """
+hasfield()
 function recurrent_network(;cells, connections)
 	@unpack params, map = connections
 	ws = Dict{Symbol, Matrix{Float32}}()
 	for (out_, in_, _name, ρ, μ, σ) in map
 		_in = getfield(cells,in_)
 		_out = getfield(cells,out_)
-		_μ  = getfield(params,μ)
-		_σ  = getfield(params,σ)
-		_ρ   = getfield(params,ρ)
+		_μ  = hasfield(typeof(params),:μ) ? getfield(params,μ) : 0.f0
+		_σ  = hasfield(typeof(params),:σ) ? getfield(params,σ) : 0.f0
+		_ρ  = hasfield(typeof(params),:ρ) ? getfield(params,ρ) : 0.f0
 
 		## set matrix to zero if one of population is empty
 		(_in == 0 || _out == 0 ) && (_in = 0; _out =0; )
-		if getfield(params,σ) == 0
+		if !hasfield(typeof(params),:σ)
 			ww = sparser(_μ*ones(_out, _in), _ρ)
 		else
 			ww=  Float32.(sparser(rand(LogNormal(log(_μ) ,_σ), _out , _in), _ρ))

@@ -1,12 +1,15 @@
 abstract type Encoding end
 
-struct SeqEncoding <: Encoding
-    populations::Array{Vector{Int64},1}
-    dendrites::Array{Array{Float32,2},1}
-    sequence::Array{Int64,2}
+@with_kw struct SeqEncoding <:Encoding
+    populations::Array{Vector{Int64},1} # each symbol target population
+    dendrites::Array{Array{Float32,2},1} # the dendrite of the target population
+    sequence::Array{Int64,2} #the sequence of symbols
 	mapping::Dict
+	rev_mapping= Dict(x[2]=>x[1] for x in mapping)
 	lemmas::Dict
 	null::Int
+	duration::Float32
 end
+
 
 export Encoding, SeqEncoding

@@ -1,8 +1,9 @@
-include("raster.jl")
-include("rate.jl")
-include("weights.jl")
-include("colors.jl")
-include("all_plots.jl")
+using .Plots
+# include("raster.jl")
+# include("rate.jl")
+# include("weights.jl")
+# include("colors.jl")
+# include("all_plots.jl")
 include("track_neurons.jl")
 
 

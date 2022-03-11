@@ -9,7 +9,7 @@ function save(W::NamedTuple, T::Float32, rd::String)
     return nothing
 end
 
-function save(tracker::AbstractTracker, T::Float32, rd::String)
+function save(tracker::Tracker, T::Float32, rd::String)
     filename = abspath(joinpath(rd,"Tracker_$T.h5"))
     fid = h5open(filename,"w")
 	for name in fieldnames(typeof(tracker))

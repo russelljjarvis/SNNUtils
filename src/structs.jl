@@ -1,7 +1,7 @@
 Spiketimes = Vector{Vector{Float32}}
 
 abstract type SNNDataTypes end
-abstract type AbstractTracker end
+abstract type Tracker end
 
 struct Weights <:SNNDataTypes
 	data::NamedTuple
@@ -16,17 +16,13 @@ end
 function Base.fieldnames(mnt::Weights)
 	return fieldnames(typeof(getfield(mnt,:data)))
 end
+
+export SNNData, States, Spikes, Rates, Weights, Spiketimes
+export SNNDataTypes, Tracker
 # function Base.fieldnames(Weights)
 # 	return fieldnames(typeof(getfield(mnt,:data)))
 # end
 
-function Base.getproperty(mnt::SNNData, sym::Symbol)
-	if (sym in fieldnames(SNNData))
-		return getfield(mnt, sym)
-    else
-       return getfield(getfield(mnt,:data), sym)
-   end
-end
 
 # c =Weights((a=2,b=4))
 # fieldnames(Weights)

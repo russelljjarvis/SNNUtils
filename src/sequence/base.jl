@@ -14,4 +14,10 @@ function get_track_neurons(seq)
 	push!(track_neurons,2) # second sst / pv
 end
 
-export get_track_neurons
+function seq_in_interval(seq, interval)
+	x0 = findfirst(x->(x-1) * seq.duration >= interval[1], 1:length(seq.sequence[1,:]))
+	xl = findlast(x->x * seq.duration < interval[2], 1:length(seq.sequence[1,:]) )
+	return x0:xl
+end
+
+export get_track_neurons, seq_in_interval
