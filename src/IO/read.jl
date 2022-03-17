@@ -1,3 +1,4 @@
+
 function load(datatype::DataType, rd::String, tt0::Real=-1)
 	data  = Vector{SNNData{datatype}}()
 	name  = string(datatype)

@@ -2,7 +2,7 @@ abstract type AbstractReceptor end
 
 
 @with_kw struct Receptor <:AbstractReceptor
-	E_rev::Float32
+	E_rev::Float32=0.0
 	τr::Float32=-1.f0
 	τd::Float32=-1.f0
 	g0::Float32= 0.f0
@@ -14,7 +14,8 @@ end
 
 Mg_mM     = 1f0
 nmda_b   = 3.36       #(no unit) parameters for voltage dependence of nmda channels
-nmda_k   = -0.062     #(1/V) source: http://dx.doi.org/10.1016/j.neucom.2011.04.018)
+# nmda_k   = -0.062     #(1/V) source: http://dx.doi.org/10.1016/j.neucom.2011.04.018)
+nmda_k   = -0.077     #Eyal 2018
 
 @with_kw struct ReceptorVoltage <: AbstractReceptor
 	E_rev::Float32 = 0.f0
@@ -37,7 +38,21 @@ struct Synapse
 	GABAb::Receptor
 end
 
-export Receptor, Synapse, ReceptorVoltage
+struct Glutamatergic
+	AMPA::Receptor
+	NMDA::ReceptorVoltage
+end
+
+struct GABAergic
+	GABAa::Receptor
+	GABAb::Receptor
+end
+
+function Synapse(glu::Glutamatergic, gaba::GABAergic)
+	return Synapse(glu.AMPA, glu.NMDA, gaba.GABAa, gaba.GABAb)
+end
+
+export AbstractReceptor, Receptor, Synapse, ReceptorVoltage, GABAergic, Glutamatergic
 
 #=========================================
 			Synaptic fit

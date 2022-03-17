@@ -5,7 +5,6 @@ module MyUnits
 	import Unitful: μm,cm,m, Ω, GΩ, F,μF, pF
 	import Unitful: @u_str, @unit, uconvert
 	@unit Sim "Sim" Siemens 1u"1/Ω" true
-	@unit nS "nSim" Siemens 1u"1/GΩ" true
 
 	Unitful.register(MyUnits)
 
@@ -19,14 +18,14 @@ module MyUnits
 	    l_ = uconvert(cm,d)
 	    d_ = uconvert(cm,l)
 	    R_ = Ri*l/(π*d*d/4)
-	    return uconvert(nS, 1/R_)
+	    return uconvert(u"nSim", 1/R_)
 	end
 
 	function G_mem(;Rd=Rd,d=d,l=l)
 	    d_ = uconvert(cm,l)
 		l_ = uconvert(cm,d)
 	    R_ = Rd/l_/d_/π
-	    return uconvert(nS, 1/R_)
+	    return uconvert(u"nSim", 1/R_)
 	end
 
 	function C_mem(;Cd=Cd,d=d,l=l)
@@ -52,13 +51,13 @@ module MyUnits
 	end
 end
 
-Dendrite = NamedTuple{(:gm, :gax, :C, :E_r, :l, :d), NTuple{6, Float32}}
+Dendrite = NamedTuple{(:gm, :gax, :C, :Er, :l, :d), NTuple{6, Float32}}
 Dendrites = Tuple{Vector{Dendrite}, Vector{Dendrite}}
 export Dendrite, Dendrites
 
 function create_dendrite(l::Int64, d=4.f0::Float32, T=Float32)
 	g_m, g_ax, _C = MyUnits.get_dendrite(l=l, d=d)
-	return (gm=T(g_m), gax=T(g_ax), C=T(_C), E_r=T(-70.6mV), l=T(l), d=T(d))
+	return (gm=T(g_m), gax=T(g_ax), C=T(_C), Er=T(-70.6mV), l=T(l), d=T(d))
 end
 
 # function create_dendrites(ls::Vector{Real}, d=4.f0, T=Float32)

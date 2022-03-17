@@ -4,7 +4,6 @@ module SNNUtils
 	include("structs.jl")
 	include("unit.jl")
 	include("util.jl")
-	include("params.jl")
 	include("dendrites.jl")
 	include("protocols.jl")
 	include("synapses/base.jl")
@@ -17,6 +16,8 @@ module SNNUtils
 	function __init__()
 	    @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("plots/base.jl")
 	end
+
+	a = 20
 
 
 end # module

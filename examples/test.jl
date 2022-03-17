@@ -1,4 +1,5 @@
 using Revise
-
-using Plots
+# using Plots
 using SNNUtils
+
+SNNUtils.a

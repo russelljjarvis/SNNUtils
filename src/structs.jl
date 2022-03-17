@@ -2,6 +2,10 @@ Spiketimes = Vector{Vector{Float32}}
 
 abstract type SNNDataTypes end
 abstract type Tracker end
+abstract type AbstractStimParams end
+abstract type AbstractStoreParams end
+abstract type AbstractNetParams end
+abstract type AbstractLearnParams end
 
 struct Weights <:SNNDataTypes
 	data::NamedTuple
@@ -19,13 +23,7 @@ end
 
 export SNNData, States, Spikes, Rates, Weights, Spiketimes
 export SNNDataTypes, Tracker
-# function Base.fieldnames(Weights)
-# 	return fieldnames(typeof(getfield(mnt,:data)))
-# end
 
 
-# c =Weights((a=2,b=4))
-# fieldnames(Weights)
-#
-# using UnPack
-# # @unpack a, b =c
+
+export AbstractStimParams, AbstractStoreParams, AbstractNetParams, AbstractLearnParams
