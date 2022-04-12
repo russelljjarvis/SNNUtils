@@ -153,7 +153,7 @@ end
 # 2. I can look the spike rate of the target word and see if it differs from non target words. This is easy to implement
 
 
-function score_features(;features::Matrix{Float32}, n_neurons::Int64, seq::SeqEncoding, idxs::Vector{Int}, save_path::String, feats_set::NamedTuple)
+function score_features(;features::Matrix{Float32}, n_neurons::Int64, seq::Encoding, idxs::Vector{Int}, save_path::String, feats_set::NamedTuple)
     #labels idx for tt0
 
     ## Prepare labels and neurons

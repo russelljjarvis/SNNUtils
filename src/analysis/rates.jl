@@ -112,7 +112,7 @@ end
 """
 Measure the spike rate of the target populations and compare it with the non-target populations
 """
-function target_pop_rate(interval::Int64, seq::SeqEncoding, network_state::Array{Float32,3}, stim::StimParams, symbol::Int)
+function target_pop_rate(interval::Int64, seq::Encoding, network_state::Array{Float32,3}, stim::StimParams, symbol::Int)
         if !(symbol ∈ [1,2])
             throw("symbol: 1 words, 2 phonemes")
         end

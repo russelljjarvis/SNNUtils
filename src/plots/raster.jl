@@ -4,7 +4,7 @@ using Plots
 =======================#
 import Plots: Series, Plot, Subplot
 
-function raster_both_populations(spikes::Vector{NNSpikes}, seq::SeqEncoding, timeframe::Int, store::StoreParams, interval=1)
+function raster_both_populations(spikes::Vector{NNSpikes}, seq::Encoding, timeframe::Int, store::StoreParams, interval=1)
 	p = let
 
 		_start = spikes[timeframe].tt-spikes[1].tt
@@ -23,7 +23,7 @@ end
 
 rectangle(w, h, x, y) = Shape(x .+ [0,w,w,0], y .+ [0,0,h,h])
 
-function raster_populations(spikes::Vector{NNSpikes}, seq::SeqEncoding; target, timeframe::Int64)
+function raster_populations(spikes::Vector{NNSpikes}, seq::Encoding; target, timeframe::Int64)
 	if target == "words"
 		_target = 1
 	elseif target == "phs"

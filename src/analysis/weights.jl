@@ -23,7 +23,7 @@ end
 
 ## Clustering of excitatory populations
 
-function epop_cluster_history(seq::SeqEncoding, ws::Array, conn::String)
+function epop_cluster_history(seq::Encoding, ws::Array, conn::String)
 	n_pop = length(filter(!isempty,seq.populations))
 	w_t = zeros(length(ws),n_pop, n_pop)
 	iterations = ProgressBar(eachindex(ws))
@@ -34,7 +34,7 @@ function epop_cluster_history(seq::SeqEncoding, ws::Array, conn::String)
 end
 
 
-function epop_cluster(seq::SeqEncoding,  ee::Array{Float32,2})
+function epop_cluster(seq::Encoding,  ee::Array{Float32,2})
 	populations = filter(x->!isempty(x),seq.populations)
 	_weights = zeros(length(populations),length(populations))
 	for (n,pop1) in enumerate(populations)
@@ -48,7 +48,7 @@ end
 
 ## Clustering between phonemes and words
 
-function epop_cross_history(seq::SeqEncoding, ws::Array, conn::String)
+function epop_cross_history(seq::Encoding, ws::Array, conn::String)
 	w_t = zeros(length(ws),length(get_words(seq)),2)
 	for (n,w) in enumerate(ws)
 		dictionary = epop_cross(seq,read(w,conn))
@@ -61,7 +61,7 @@ function epop_cross_history(seq::SeqEncoding, ws::Array, conn::String)
 	return w_t
 end
 
-function epop_cross(seq::SeqEncoding,  ee::Matrix{Float32}; adjoin::Bool=false)
+function epop_cross(seq::Encoding,  ee::Matrix{Float32}; adjoin::Bool=false)
 	dictionary = Dict()
 	adjoin && (ee = ee')
 	couples = word_phonemes_couples(seq)
@@ -76,7 +76,7 @@ function epop_cross(seq::SeqEncoding,  ee::Matrix{Float32}; adjoin::Bool=false)
 	return dictionary
 end
 
-# function ipop_cluster(seq::SeqEncoding,  W::Array)
+# function ipop_cluster(seq::Encoding,  W::Array)
 # 	ave_weights = Vector{Float32}()
 # 	for pop in seq.populations
 # 		z = 0.
@@ -91,7 +91,7 @@ end
 # end
 
 
-function word_phonemes_couples(seq::SeqEncoding)
+function word_phonemes_couples(seq::Encoding)
 	couples = []
 	reverse = reverse_dictionary(seq.mapping)
 	for key in keys(seq.lemmas)
@@ -106,7 +106,7 @@ function word_phonemes_couples(seq::SeqEncoding)
 	return couples
 end
 
-function check_seq_consistency(seq::SeqEncoding)
+function check_seq_consistency(seq::Encoding)
 	n = 1
 	N = length(seq.sequence[1,:])
 	while n <  N

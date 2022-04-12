@@ -1,6 +1,6 @@
 abstract type Encoding end
 
-@with_kw struct SeqEncoding <:Encoding
+@with_kw struct Encoding <:Encoding
     populations::Array{Vector{Int64},1} # each symbol target population
     dendrites::Array{Array{Float32,2},1} # the dendrite of the target population
     sequence::Array{Int64,2} #the sequence of symbols
@@ -12,4 +12,4 @@ abstract type Encoding end
 end
 
 
-export Encoding, SeqEncoding
+export Encoding, Encoding

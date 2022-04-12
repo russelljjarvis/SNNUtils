@@ -76,10 +76,10 @@ function seq_encoder(net::AbstractNetParams, stim::AbstractStimParams)
 
 	## Set null connections to the null symbol
 	connections[null] = []
-    return SeqEncoding(populations=connections, dendrites=dendrites, sequence=sequence, mapping=mapping, lemmas=lemmas, duration=stim.duration, null=null)#, pop_to_symbol, symbol_to_pop)
+    return Encoding(populations=connections, dendrites=dendrites, sequence=sequence, mapping=mapping, lemmas=lemmas, duration=stim.duration, null=null)#, pop_to_symbol, symbol_to_pop)
 end
 
-function randomize_sequence(seq::SeqEncoding, stim::AbstractStimParams)
+function randomize_sequence(seq::Encoding, stim::AbstractStimParams)
     """
 	Get a sequence and produce a new random sequence with the same words and
 	the length defined in the stimulus parameters
@@ -132,10 +132,10 @@ function randomize_sequence(seq::SeqEncoding, stim::AbstractStimParams)
 		sequence[2, n]=r_mapping[p]
 	end
 
-    return SeqEncoding(populations, dendrites, sequence, mapping, lemmas, null)
+    return Encoding(populations, dendrites, sequence, mapping, lemmas, null)
 end
 
-function null_sequence(seq::SeqEncoding, stim::AbstractStimParams)
+function null_sequence(seq::Encoding, stim::AbstractStimParams)
     """
 	Get a sequence and produce a new random sequence with the same words and
 	the length defined in the stimulus parameters
@@ -148,7 +148,7 @@ function null_sequence(seq::SeqEncoding, stim::AbstractStimParams)
 		sequence[2, n]= seq.null
 	end
 
-    return SeqEncoding(seq.populations, seq.dendrites, sequence, seq.mapping, seq.lemmas, seq.null)
+    return Encoding(seq.populations, seq.dendrites, sequence, seq.mapping, seq.lemmas, seq.null)
 end
 
 
@@ -161,11 +161,11 @@ function reverse_dictionary(dictionary)
 end
 
 
-function get_phonemes(seq::SeqEncoding)
+function get_phonemes(seq::Encoding)
 	sort!(collect(Set(seq.sequence[2,:])))
 end
 
-function get_words(seq::SeqEncoding)
+function get_words(seq::Encoding)
 	sort!(collect(Set(seq.sequence[1,:])))
 end
 
