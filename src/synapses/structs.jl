@@ -6,10 +6,10 @@ abstract type AbstractReceptor end
 	τr::Float32=-1.f0
 	τd::Float32=-1.f0
 	g0::Float32= 0.f0
-	gsyn::Float32 =  g0*norm_synapse(τr,τd)
+	gsyn::Float32 =  g0 > 0 ? g0*norm_synapse(τr,τd) : 0.f0
 	α::Float32 =  α_synapse(τr, τd)
-	τr⁻::Float32=1/τr
-	τd⁻::Float32=1/τd
+	τr⁻::Float32= 1/τr > 0 ? 1/τr : 0.f0
+	τd⁻::Float32=1/τd > 0 ? 1/τd : 0.f0
 end
 
 Mg_mM     = 1f0
@@ -19,16 +19,16 @@ nmda_k   = -0.077     #Eyal 2018
 
 @with_kw struct ReceptorVoltage <: AbstractReceptor
 	E_rev::Float32 = 0.f0
-	τr::Float32=-1.f0
-	τd::Float32=-1.f0
+	τr::Float32= -1.f0
+	τd::Float32= -1.f0
 	g0::Float32= 0.f0
-	gsyn::Float32 = g0*norm_synapse(τr, τd)
+	gsyn::Float32 =  g0 > 0 ? g0*norm_synapse(τr,τd) : 0.f0
 	α::Float32 = α_synapse(τr,τd)
 	b::Float32 = nmda_b
 	k::Float32 = nmda_k
 	mg::Float32 = Mg_mM
-	τr⁻::Float32=1/τr
-	τd⁻::Float32=1/τd
+	τr⁻::Float32= 1/τr > 0 ? 1/τr : 0
+	τd⁻::Float32=1/τd > 0 ? 1/τd : 0
 end
 
 struct Synapse

@@ -3,9 +3,6 @@
 =====================================#
 
 """
-	koch_parameters()
-
-Parameters from:
 Christof Koch. Biophysics of Computation: Information Processing in Single Neurons, by.Trends in Neurosciences, 22842(7):328–329, July 1999. ISSN 0166-2236, 1878-108X. doi: 10.1016/S0166-2236(99)01403-4.
 """
 KochGlu = Glutamatergic(
@@ -15,35 +12,16 @@ KochGlu = Glutamatergic(
 
 
 """
-Renato Duarte and Abigail Morrison. Leveraging heterogeneity for neural computation with fading memory in layer 2/3808cortical microcircuits.bioRxiv, December 2017. doi: 10.1101/230821.
-"""
-
-GluSoma = Glutamatergic(
-		 Receptor(E_rev=0.0, τr=0.25, τd=2.0,g0=0.73),
-		 ReceptorVoltage())
-
-DuarteGluDend = Glutamatergic(
-		 Receptor(E_rev=0.0, τr=0.25, τd=2.0,g0=0.73),
-		 ReceptorVoltage(E_rev=0.0, τr = 0.99, τd=100., g0 = 0.159)
-)
-
-"""
-	eyal_parameters()
-
-Parameters from:
 Guy Eyal, Matthijs B. Verhoog, Guilherme Testa-Silva, Yair Deitcher, Ruth Benavides-Piccione, Javier DeFelipe, Chris-832tiaan P. J. de Kock, Huibert D. Mansvelder, and Idan Segev. Human Cortical Pyramidal Neurons: From Spines to833Spikes via Models.Frontiers in Cellular Neuroscience, 12, 2018. ISSN 1662-5102. doi: 10.3389/fncel.2018.00181.
 """
 
 EyalGluDend = Glutamatergic(
 		 Receptor(E_rev=0.0, τr=0.25, τd=2.0,g0=0.73),
-		 ReceptorVoltage(E_rev=0.0, τr = 1.31, τd=35., g0 = 1.31)
+		 ReceptorVoltage(E_rev=0.0, τr = 8, τd=35., g0 = 1.31)
 )
 
 
 """
-	miles_parameters()
-
-Parameters from:
 Richard Miles, Katalin Tóth, Attila I Gulyás, Norbert Hájos, and Tamas F Freund.  Differences between Somatic923and Dendritic Inhibition in the Hippocampus.Neuron, 16(4):815–823, April 1996. ISSN 0896-6273. doi: 10.1016/924S0896-6273(00)80101-4.
 """
 MilesGabaDend = GABAergic(
@@ -52,10 +30,28 @@ MilesGabaDend = GABAergic(
 )
 
 MilesGabaSoma = GABAergic(
- Receptor(E_rev = -75.,τr= 5.1, τd= 18., g0= 0.265),
+ Receptor(E_rev = -75.,τr= 0.5, τd= 6., g0= 0.265),
  Receptor()
 )
 
+
+"""
+Renato Duarte and Abigail Morrison. Leveraging heterogeneity for neural computation with fading memory in layer 2/3808cortical microcircuits.bioRxiv, December 2017. doi: 10.1101/230821.
+"""
+
+DuarteGluSoma = Glutamatergic(
+		 Receptor(E_rev=0.0, τr=0.25, τd=2.0,g0=0.73),
+		 ReceptorVoltage(E_rev=0.0))
+
+DuarteGluDend = Glutamatergic(
+		 Receptor(E_rev=0.0, τr=0.25, τd=2.0,g0=0.73),
+		 ReceptorVoltage(E_rev=0.0, τr = 0.99, τd=100., g0 = 0.159)
+)
+
+DuarteGabaSoma = GABAergic(
+		 Receptor(E_rev = -75.,τr= 0.5, τd= 6., g0= 0.265),
+		 Receptor(E_rev = -90.,τr= 30, τd= 100., g0=0.006)
+)
 
 
 DuarteSynapsePV =
@@ -118,5 +114,37 @@ DuarteSynapseSST= let
     Synapse(AMPA, NMDA, GABAa, GABAb)
 end
 
+"""
+Litwin-Kumar, A., & Doiron, B. (2014). Formation and maintenance of neuronal assemblies through synaptic plasticity. Nature Communications, 5(1). https://doi.org/10.1038/ncomms6319
+"""
 
-export KochGlu, DuarteGluDend, DuarteSynapseSST, DuarteSynapsePV, GluSoma, MilesGabaSoma, MilesGabaDend, EyalGluDend
+LKDGluSoma = Glutamatergic(
+		 Receptor(E_rev=0.0, τr=1., τd=6.0,g0=1.),
+		 ReceptorVoltage(E_rev=0.0))
+
+LKDGabaSoma = GABAergic(
+		 Receptor(E_rev = -75.,τr= .5, τd= 2., g0= 1.),
+		 Receptor()
+)
+
+# ##
+# LKDSynapses = SynapseModels(
+#     Esyn_soma = Synapse(LKDGluSoma, LKDGabaSoma),
+#     Esyn_dend = Synapse(EyalGluDend,MilesGabaDend),
+#     Isyn_sst = DuarteSynapseSST,
+#     Isyn_pv = Synapse(LKDGluSoma, LKDGabaSoma)
+# )
+#
+# TripodSynapses = SynapseModels(
+#     Esyn_soma=Synapse(DuarteGluSoma,MilesGabaSoma),
+#     Esyn_dend=Synapse(EyalGluDend,MilesGabaDend),
+#     Isyn_sst=DuarteSynapseSST,
+# 	Isyn_pv=DuarteSynapsePV
+# )
+#
+# DuarteSynapses = SynapseModels(
+#     Esyn_soma=Synapse(DuarteGluSoma,DuarteGabaSoma),
+#     Esyn_dend=Synapse(EyalGluDend,MilesGabaDend),
+#     Isyn_sst=DuarteSynapseSST,
+# 	Isyn_pv=DuarteSynapsePV
+# )
