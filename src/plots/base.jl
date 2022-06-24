@@ -1,4 +1,3 @@
-using .Plots
 # include("raster.jl")
 # include("rate.jl")
 # include("weights.jl")

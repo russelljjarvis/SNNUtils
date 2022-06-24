@@ -2,6 +2,15 @@ module SNNUtils
 
 	using Parameters
 	using Plots
+	using Random
+	using Distributions
+	using Printf
+	using JLD
+	using HDF5
+	using Serialization
+	using Dates
+	using BSON
+
 	include("structs.jl")
 	include("unit.jl")
 	include("util.jl")
