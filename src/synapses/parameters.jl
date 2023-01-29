@@ -127,6 +127,10 @@ LKDGabaSoma = GABAergic(
 		 Receptor()
 )
 
+export EyalGluDend, MilesGabaDend, DuarteGluSoma, MilesGabaSoma
+
+
+
 # ##
 # LKDSynapses = SynapseModels(
 #     Esyn_soma = Synapse(LKDGluSoma, LKDGabaSoma),
