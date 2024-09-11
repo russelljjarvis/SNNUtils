@@ -1,39 +1,39 @@
 function save(W::NamedTuple, T::Float32, rd::String)
-    filename = abspath(joinpath(rd,"Weights_$T.h5"))
-    fid = h5open(filename,"w")
-	for name in fieldnames(typeof(W))
-	    fid[string(name)] = getproperty(W, name)
-	end
-	fid["tt"] = T
+    filename = abspath(joinpath(rd, "Weights_$T.h5"))
+    fid = h5open(filename, "w")
+    for name in fieldnames(typeof(W))
+        fid[string(name)] = getproperty(W, name)
+    end
+    fid["tt"] = T
     close(fid)
     return nothing
 end
 
 function save(tracker::Tracker, T::Float32, rd::String)
-    filename = abspath(joinpath(rd,"Tracker_$T.h5"))
-    fid = h5open(filename,"w")
-	for name in fieldnames(typeof(tracker))
-	    fid[string(name)] = getfield(tracker, name)
-	end
-	fid["tt"] = T
-	close(fid)
-	return nothing
+    filename = abspath(joinpath(rd, "Tracker_$T.h5"))
+    fid = h5open(filename, "w")
+    for name in fieldnames(typeof(tracker))
+        fid[string(name)] = getfield(tracker, name)
+    end
+    fid["tt"] = T
+    close(fid)
+    return nothing
 end
 
-function save(datatype::DataType, T::Float32,rd::String; kwargs...)
-	name = string(datatype)
-	if datatype == Spikes
-	    filename = abspath(joinpath(rd,"$(name)_$T.bson"))
-		bson(filename; kwargs...)
-	else
-	    filename = abspath(joinpath(rd,"$(name)_$T.h5"))
-	    fid = h5open(filename,"w")
-		for n in keys(kwargs)
-			fid[string(n)] = kwargs[n]
-		end
-		fid["tt"] = T
-	    close(fid)
-	end
+function save(datatype::DataType, T::Float32, rd::String; kwargs...)
+    name = string(datatype)
+    if datatype == Spikes
+        filename = abspath(joinpath(rd, "$(name)_$T.bson"))
+        bson(filename; kwargs...)
+    else
+        filename = abspath(joinpath(rd, "$(name)_$T.h5"))
+        fid = h5open(filename, "w")
+        for n in keys(kwargs)
+            fid[string(n)] = kwargs[n]
+        end
+        fid["tt"] = T
+        close(fid)
+    end
     return nothing
 end
 

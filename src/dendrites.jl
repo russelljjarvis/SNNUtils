@@ -1,113 +1,116 @@
 ## Set physiology
-
-module MyUnits
-	import Unitful
-	import Unitful: μm,cm,m, Ω, GΩ, F,μF, pF
-	import Unitful: @u_str, @unit, uconvert
-	@unit Sim "Sim" Siemens 1u"1/Ω" true
-
-	Unitful.register(MyUnits)
-
-	struct Physiology
-		Ri::typeof(1. *Ω*cm)
-		Rd::typeof(1. *Ω*cm^2)
-		Cd::typeof(1. *μF/cm^2)
-	end
-
-	function G_axial(;Ri=Ri,d=d,l=l)
-	    l_ = uconvert(cm,d)
-	    d_ = uconvert(cm,l)
-	    R_ = Ri*l/(π*d*d/4)
-	    return uconvert(u"nSim", 1/R_)
-	end
-
-	function G_mem(;Rd=Rd,d=d,l=l)
-	    d_ = uconvert(cm,l)
-		l_ = uconvert(cm,d)
-	    R_ = Rd/l_/d_/π
-	    return uconvert(u"nSim", 1/R_)
-	end
-
-	function C_mem(;Cd=Cd,d=d,l=l)
-	    l_ = uconvert(cm,d)
-	    d_ = uconvert(cm,l)
-	    C_ = Cd*π*d*l
-	    return uconvert(pF, C_)
-	end
-
-	HUMAN = Physiology(200*Ω*cm,38907*Ω*cm^2, 0.5μF/cm^2)
-	MOUSE = Physiology(200*Ω*cm,1700Ω*cm^2,1μF/cm^2)
-
-	function get_dendrite(;d::Real,l::Real, s="H")
-		d = d*μm
-		l = l*μm
-		if s =="M"
-			Ri,Rd,Cd = MOUSE.Ri,MOUSE.Rd,MOUSE.Cd
-		elseif s =="H"
-			Ri,Rd,Cd = HUMAN.Ri,HUMAN.Rd,HUMAN.Cd
-		end
-		return G_mem(Rd=Rd,d=d,l=l).val, G_axial(Ri=Ri,d=d,l=l).val, C_mem(Cd=Cd,d=d, l=l).val
-		# units: nS, nS, pF
-	end
+SNN.@load_units
+struct Physiology
+    Ri::Float32 ## in Ω*cm
+    Rd::Float32 ## in Ω*cm^2
+    Cd::Float32 ## in pF/cm^2
 end
 
-Dendrite = NamedTuple{(:gm, :gax, :C, :Er, :l, :d), NTuple{6, Float32}}
-Dendrites = Tuple{Vector{Dendrite}, Vector{Dendrite}}
-export Dendrite, Dendrites
+HUMAN = Physiology(200 * Ω * cm, 38907 * Ω * cm^2, 0.5μF / cm^2)
+MOUSE = Physiology(200 * Ω * cm, 1700Ω * cm^2, 1μF / cm^2)
 
-function create_dendrite(l::Int64, d=4.f0::Float32, T=Float32)
-	g_m, g_ax, _C = MyUnits.get_dendrite(l=l, d=d)
-	return (gm=T(g_m), gax=T(g_ax), C=T(_C), Er=T(-70.6mV), l=T(l), d=T(d))
+"""
+    G_axial(;Ri=Ri,d=d,l=l)
+    Axial conductance of a cylinder of length l and diameter d
+    return Conductance in nS
+"""
+function G_axial(; Ri = Ri, d = d, l = l)
+    ((π * d * d) / (Ri * l * 4))
 end
 
-# function create_dendrites(ls::Vector{Real}, d=4.f0, T=Float32)
-# 	g_ms = Vector{Float32}()
-# 	g_axs = Vector{Float32}()
-# 	Cs = Vector{Float32}()
-# 	Cs⁻ = Vector{Float32}()
-# 	ls = Vector{Float32}()
-# 	ds = Vector{Float32}()
-# 	for l in ls
-# 		g_m, g_ax, C = MyUnits.get_dendrite(l=l, d=d)
-# 		push!(g_ms,g_m)
-# 		push!(g_axs,g_ax)
-# 		push!(Cs,C)
-# 		push!(Cs⁻,1/C)
-# 		push!(ds,d)
-# 	end
-# 	return (g_m=T.(g_ms), g_ax=T.(g_axs), C=T.(Cs), C⁻=T.(Cs⁻), l=T.(ls), d=T.(ds))
+"""
+    G_mem(;Rd=Rd,d=d,l=l)
+    Membrane conductance of a cylinder of length l and diameter d
+    return Conductance in nS
+"""
+function G_mem(; Rd = Rd, d = d, l = l)
+    ((l * d * π) / Rd)
+end
+
+"""
+    C_mem(;Cd=Cd,d=d,l=l)
+    Capacitance of a cylinder of length l and diameter d
+    return Capacitance in pF
+"""
+function C_mem(; Cd = Cd, d = d, l = l)
+    (Cd * π * d * l)
+end
+
+function create_dendrite(; d::Real = 4um, l::Real, s = "H")
+    @unpack Ri, Rd, Cd = s == "M" ? MOUSE : HUMAN
+    if l <= 0
+        return (
+            gm = 1.f0,
+            gax = 0.f0,
+            C = 1.f0,
+            l = -1,
+            d = d,
+        )
+    else
+        return (
+            gm = G_mem(Rd = Rd, d = d, l = l),
+            gax = G_axial(Ri = Ri, d = d, l = l),
+            C = C_mem(Cd = Cd, d = d, l = l),
+            l = l,
+            d = d,
+        )
+    end
+end
+
+export create_dendrite
+
+
+# function get_dends(net::NetParams; seed = nothing)
+#     if seed !== nothing
+#         Random.seed!(seed)
+#     end
+#     function dend_parser(model::String)
+#         try
+#             l1, l2 = split(model, ";")
+#             return parse(Int64, l1), parse(Int64, l2)
+#         catch
+#             l1 = parse(Int64, model)
+#             return l1, l1
+#         end
+#     end
+#     @info "Dendrite model: $(net.model)"
+#     if net.model == "random_symm"
+#         pm1 = Array{PassiveMembraneParameters,1}(undef, net.tripod)
+#         pm2 = Array{PassiveMembraneParameters,1}(undef, net.tripod)
+#         for cc = 1:net.tripod
+#             d = rand(150:1:400)
+#             pm1[cc] = PassiveMembraneParameters("rnd_symm", "H", 4, d)
+#             pm2[cc] = PassiveMembraneParameters("rnd_symm", "H", 4, d)
+#         end
+#     elseif net.model == "random"
+#         pm1 = Array{PassiveMembraneParameters,1}(undef, net.tripod)
+#         pm2 = Array{PassiveMembraneParameters,1}(undef, net.tripod)
+#         for cc = 1:net.tripod
+#             pm1[cc] = PassiveMembraneParameters("rnd", "H", 4, rand(150:1:400))
+#             pm2[cc] = PassiveMembraneParameters("rnd", "H", 4, rand(150:1:400))
+#         end
+#     elseif net.model == "single"
+#         pm1 = Array{PassiveMembraneParameters,1}(undef, net.tripod)
+#         pm2 = Array{PassiveMembraneParameters,1}(undef, net.tripod)
+#         for cc = 1:net.tripod
+#             pm1[cc] = PassiveMembraneParameters("fix", "H", 4, rand(150:1:400))
+#             pm2[cc] = PassiveMembraneParameters("fix", "H", 4, 0.0)
+#         end
+#     elseif net.model == "soma"
+#         pm1 = Array{PassiveMembraneParameters,1}(undef, net.tripod)
+#         pm2 = Array{PassiveMembraneParameters,1}(undef, net.tripod)
+#         for cc = 1:net.tripod
+#             pm1[cc] = PassiveMembraneParameters("soma", "H", 4, 0.0)
+#             pm2[cc] = PassiveMembraneParameters("soma", "H", 4, 0.0)
+#         end
+#     else
+#         l1, l2 = dend_parser(net.model)
+#         pm1 = Array{PassiveMembraneParameters,1}(undef, net.tripod)
+#         pm2 = Array{PassiveMembraneParameters,1}(undef, net.tripod)
+#         for cc = 1:net.tripod
+#             pm1[cc] = PassiveMembraneParameters("fix", "H", 4, l1)
+#             pm2[cc] = PassiveMembraneParameters("fix", "H", 4, l2)
+#         end
+#     end
+#     return DendParams(pm1 = pm1, pm2 = pm2)
 # end
-
-
-function dend_parser(model::String)
-	try
-		l1, l2 = split(model,";")
-		return parse(Int64,l1), parse(Int64,l2)
-	catch
-		l1 = parse(Int64,model)
-		return l1, l1
-	end
-end
-
-
-DendArray = Vector{Dendrite}
-function get_dends(model::String, N::Int, range=150:1:400)::Dendrites
-	if model == "random"
-		pm1 = Array{Dendrite,1}(undef,N)
-		pm2 = Array{Dendrite,1}(undef,N)
-		for cc in 1:N
-			pm1[cc]= create_dendrite(rand(range))
-			pm2[cc]= create_dendrite(rand(range))
-		end
-	else
-		l1, l2 = dend_parser(model)
-		pm2 = Array{Dendrite,1}(undef,N)
-		pm1 = Array{Dendrite,1}(undef,N)
-		for cc in 1:N
-			pm1[cc]= create_dendrite(l1)
-			pm2[cc]= create_dendrite(l2)
-		end
-	end
-	return (pm1,pm2)
-end
-export get_dends

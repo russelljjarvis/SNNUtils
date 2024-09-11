@@ -1,8 +1,8 @@
 function get_relative_path(path::String)
-    dirs = split(path,"/")
+    dirs = split(path, "/")
     N = -1
-    for (n,dir) in enumerate(dirs)
-        if dir =="data"
+    for (n, dir) in enumerate(dirs)
+        if dir == "data"
             N = n
         end
     end
@@ -10,17 +10,17 @@ function get_relative_path(path::String)
 end
 
 function clean_store_data(store)
-	if isdir(store.data)
-		rm(store.data, recursive=true, force=true)
-		mkdir(store.data)
-	end
+    if isdir(store.data)
+        rm(store.data, recursive = true, force = true)
+        mkdir(store.data)
+    end
 end
 
 function make_dirs(store)
-	mkpath(store.path)
-	mkpath(store.params)
-	mkpath(store.data)
-	return store
+    mkpath(store.path)
+    mkpath(store.params)
+    mkpath(store.data)
+    return store
 end
 
 export make_dirs, clean_stored_data

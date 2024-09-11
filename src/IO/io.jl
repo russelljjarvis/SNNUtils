@@ -1,18 +1,18 @@
 @with_kw mutable struct SNNData{T}
-	data = NamedTuple()
-	type::DataType = T
-	tt::Float32=-1.f0
-	file::String=""
-	_read::Bool=false
+    data = NamedTuple()
+    type::DataType = T
+    tt::Float32 = -1.0f0
+    file::String = ""
+    _read::Bool = false
 end
 
 
 function Base.getproperty(mnt::SNNData, sym::Symbol)
-	if (sym in fieldnames(SNNData))
-		return getfield(mnt, sym)
+    if (sym in fieldnames(SNNData))
+        return getfield(mnt, sym)
     else
-       return getfield(getfield(mnt,:data), sym)
-   end
+        return getfield(getfield(mnt, :data), sym)
+    end
 end
 
 
