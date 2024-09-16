@@ -39,13 +39,7 @@ end
 function create_dendrite(; d::Real = 4um, l::Real, s = "H")
     @unpack Ri, Rd, Cd = s == "M" ? MOUSE : HUMAN
     if l <= 0
-        return (
-            gm = 1.f0,
-            gax = 0.f0,
-            C = 1.f0,
-            l = -1,
-            d = d,
-        )
+        return (gm = 1.0f0, gax = 0.0f0, C = 1.0f0, l = -1, d = d)
     else
         return (
             gm = G_mem(Rd = Rd, d = d, l = l),
