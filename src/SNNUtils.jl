@@ -1,6 +1,7 @@
 module SNNUtils
 
     using SpikingNeuralNetworks
+    SNN.@load_units
     using DrWatson
     using Parameters
     using Random
