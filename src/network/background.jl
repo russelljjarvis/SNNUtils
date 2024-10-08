@@ -100,7 +100,7 @@ function BalancedNoise(pop; N_E = 1000, N_I = 250, ν_E = 50Hz, ν_I = 50Hz, r0 
     return (syn = synapses, pop = populations)
 end
 
-function ExcNoise(pop; N_E = 100, ν_E = 20Hz, σ=1, name = "E")
+function ExcNoise(pop; N_E = 100, ν_E = 20Hz, σ = 1, name = "E")
     E = SNN.Poisson(N = N_E, param = SNN.PoissonParameter(rate = ν_E))
     exc = SNN.SpikingSynapse(E, pop, :ge, p = 0.2, σ = σ)
     synapses = dict2ntuple(Dict(Symbol("exc_$name") => exc))
