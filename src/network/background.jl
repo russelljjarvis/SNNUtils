@@ -75,7 +75,7 @@ function TripodExcNoise(Tripod_pop; N_E = 1000, ν_s = 200Hz, ν_d = 200Hz, σ_s
     Es = SNN.Poisson(N = N_E, param = SNN.PoissonParameter(rate = ν_s))
     exc_d1 = SNN.CompartmentSynapse(Ed, Tripod_pop, :d1, :exc, p = 0.2, σ = 1.0)
     exc_d2 = SNN.CompartmentSynapse(Ed, Tripod_pop, :d2, :exc, p = 0.2, σ = 1.0)
-    exc_s = SNN.CompartmentSynapse(Es, Tripod_pop, "s", :exc, p = 0.2, σ = σ_s)
+    exc_s = SNN.CompartmentSynapse(Es, Tripod_pop, :s, :exc, p = 0.2, σ = σ_s)
     synapses = dict2ntuple(@strdict exc_d1 exc_d2 exc_s)
     populations = dict2ntuple(@strdict Ed Es)
     return (syn = synapses, pop = populations)
