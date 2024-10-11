@@ -116,7 +116,7 @@ end
 function ExcNoise(pop; N_E = 100, ν_E = 20Hz, σ = 1, name = "E")
     E = SNN.Poisson(N = N_E, param = SNN.PoissonParameter(rate = ν_E))
     exc = SNN.SpikingSynapse(E, pop, :ge, p = 0.2, σ = σ)
-    synapses = dict2ntuple(Dict(Symbol("exc_$name") => exc))
+    synapses = dict2ntuple(Dict(Symbol("E_to_$name") => exc))
     populations = dict2ntuple(Dict(Symbol("E_$name") => E))
     return (syn = synapses, pop = populations)
 end
