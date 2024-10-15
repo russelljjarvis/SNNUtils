@@ -15,14 +15,11 @@ using BSON
 using ThreadTools
 
 include("structs.jl")
-include("dendrites.jl")
-include("protocols.jl")
-include("connections/base.jl")
-include("learning/base.jl")
-include("sequence/base.jl")
 include("IO/base.jl")
 include("analysis/base.jl")
-include("network/base.jl")
+include("stimuli/base.jl")
+
+# include("sequence/base.jl")
 
 # include("synapses/base.jl")
 # include("neurons/base.jl")
