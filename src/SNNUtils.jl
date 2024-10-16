@@ -19,17 +19,5 @@ include("IO/base.jl")
 include("analysis/base.jl")
 include("stimuli/base.jl")
 
-# include("sequence/base.jl")
-
-# include("synapses/base.jl")
-# include("neurons/base.jl")
-# include("plots/base.jl")
-
-# using Requires
-# function __init__()
-#     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-# end
-#
-
 
 end # module

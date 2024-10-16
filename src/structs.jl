@@ -15,21 +15,18 @@ abstract type AbstractSynParams end
 abstract type AbstractConnMap end
 abstract type AbstractConnections end
 
-struct Weights <: SNNDataTypes
-    data::NamedTuple
-end
 struct States <: SNNDataTypes end
 struct Spikes <: SNNDataTypes end
 struct Rates <: SNNDataTypes end
 
-function Base.getproperty(mnt::Weights, sym::Symbol)
-    return getfield(getfield(mnt, :data), sym)
-end
-function Base.fieldnames(mnt::Weights)
-    return fieldnames(typeof(getfield(mnt, :data)))
-end
+# function Base.getproperty(mnt::Weights, sym::Symbol)
+#     return getfield(getfield(mnt, :data), sym)
+# end
+# function Base.fieldnames(mnt::Weights)
+#     return fieldnames(typeof(getfield(mnt, :data)))
+# end
 
-export SNNData, States, Spikes, Rates, Weights, Spiketimes
+export SNNData, States, Spikes, Rates, Spiketimes
 export SNNDataTypes, Tracker
 
 # export AbstractStimParams, AbstractStoreParams, AbstractNetParams, AbstractLearnParams
@@ -144,12 +141,12 @@ end
     _read::Bool = false
 end
 
-@with_kw mutable struct NNWeights <: NNChunks
-    w::Weights = Weights()
-    tt::Float32 = 0.0f0
-    file::String = ""
-    _read::Bool = false
-end
+# @with_kw mutable struct NNWeights <: NNChunks
+#     w::Weights = Weights()
+#     tt::Float32 = 0.0f0
+#     file::String = ""
+#     _read::Bool = false
+# end
 
 @with_kw mutable struct NNTracker <: NNChunks
     tracker::Tracker = Tracker()
