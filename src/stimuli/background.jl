@@ -82,13 +82,13 @@ function TripodExcNoise(Tripod_pop; N_E = 1000, ν_s = 200Hz, ν_d = 200Hz, σ_s
 end
 
 
-function CompartmentExcNoise(pop, targets, rates; N_E = 1000, p0=0.2)
-    populations = Dict{String, Any}()
-    synapses = Dict{String, Any}()
+function CompartmentExcNoise(pop, targets, rates; N_E = 1000, p0 = 0.2)
+    populations = Dict{String,Any}()
+    synapses = Dict{String,Any}()
     for (target, rate) in zip(targets, rates)
         E = SNN.Poisson(N = N_E, param = SNN.PoissonParameter(rate = rate))
-        exc = SNN.CompartmentSynapse(E, pop, target, :exc, p =p0, σ = 1.0)
-        push!(synapses, "E_to_$target"=>exc)
+        exc = SNN.CompartmentSynapse(E, pop, target, :exc, p = p0, σ = 1.0)
+        push!(synapses, "E_to_$target" => exc)
         push!(populations, "E_$target" => E)
     end
     (pop = dict2ntuple(populations), syn = dict2ntuple(synapses))

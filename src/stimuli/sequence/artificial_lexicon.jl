@@ -61,11 +61,11 @@ create_lexicon("TIMIT")
 create_lexicon("identity")
 create_lexicon("no_overlap")
 
-for dic in [ "abba", "abc", "empty", "AB"]
+for dic in ["abba", "abc", "empty", "AB"]
     try
         create_lexicon(dic)
     catch
-        @error "Lexicon $dic not found" 
+        @error "Lexicon $dic not found"
     end
 end
 

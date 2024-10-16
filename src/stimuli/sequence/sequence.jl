@@ -161,7 +161,7 @@ function randomize_sequence!(seq::Encoding)
     end
 end
 
-function get_bioseq_dictionary_info(dictionary, key="test")
+function get_bioseq_dictionary_info(dictionary, key = "test")
     unique_elements = Set()
     epochs = []
     for epoch in keys(dictionary[key])
@@ -174,14 +174,14 @@ function get_bioseq_dictionary_info(dictionary, key="test")
 end
 
 function make_unique_sequence(epochs)
-    @assert all(length(epoch) == length(epochs[1]) for epoch in epochs )
-    interval_length = maximum(length.(epochs)) +1
+    @assert all(length(epoch) == length(epochs[1]) for epoch in epochs)
+    interval_length = maximum(length.(epochs)) + 1
     sequence = Vector{String}()
     for epoch in epochs
         epoch_length = length(epoch)
         add_silence = interval_length - epoch_length
         append!(sequence, epoch)
-        for _ in 1:add_silence
+        for _ = 1:add_silence
             append!(sequence, ["#"])
         end
     end
@@ -189,8 +189,13 @@ function make_unique_sequence(epochs)
     return sequence
 end
 
-function seq_from_bioseqlearn(net::NetParams, stim::StimParams, dictionary::Dict, stage="test")
-    phonemes, epochs=  get_bioseq_dictionary_info(dictionary, stage)
+function seq_from_bioseqlearn(
+    net::NetParams,
+    stim::StimParams,
+    dictionary::Dict,
+    stage = "test",
+)
+    phonemes, epochs = get_bioseq_dictionary_info(dictionary, stage)
     @show phonemes
     words = []
     null_symbol = "#"
@@ -209,7 +214,7 @@ function seq_from_bioseqlearn(net::NetParams, stim::StimParams, dictionary::Dict
     end
 
     ## Add the null symbol
-    stim.symbols+=1
+    stim.symbols += 1
     null = stim.symbols
     push!(mapping, null => "#")
     push!(r_mapping, "#" => null)
@@ -224,7 +229,7 @@ function seq_from_bioseqlearn(net::NetParams, stim::StimParams, dictionary::Dict
     end
     stim.seq_length = seq_length
     stim.simtime = seq_length * stim.duration
-    store_interval = (1+length(epochs[1]))*stim.duration
+    store_interval = (1 + length(epochs[1])) * stim.duration
     @show store_interval * length(epochs), stim.simtime
 
     ## create the populations
@@ -242,7 +247,6 @@ function seq_from_bioseqlearn(net::NetParams, stim::StimParams, dictionary::Dict
         lemmas = dictionary,
         duration = Float32(stim.duration),
         null = null,
-    ), 
-    store_interval 
+    ),
+    store_interval
 end
-
