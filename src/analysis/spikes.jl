@@ -1,53 +1,4 @@
 """
-    al;pha_function(t::T; t0::T, τ::T) where T <: AbstractFloat
-
-    Alpha function for convolution of spiketimes. Evaluate the alpha function at time t, with time of peak t0 and time constant τ.
-"""
-function alpha_function(t::T; t0::T, τ::T) where {T<:Float32}
-    return @fastmath 1 / τ * SNN.exp32(1 - (t - t0) / τ) * Θ(1.0 * (t - t0))
-end
-"""
-    Θ(x::Float64)
-
-    Heaviside function
-"""
-Θ(x::Float64) = x > 0.0 ? x : 0.0
-
-"""
-    convolve(spiketime::Vector{Float32}; interval::AbstractRange, τ = 100)
-
-    Convolve one neuron spiketimes with alpha function to have an approximate rate.
-
-    Parameters
-    ----------
-    spiketime: Vector{Float32}
-        Vector of spiketimes in milliseconds
-    interval: AbstractRange
-        Time interval to evaluate the rate
-    τ: Float32
-        Time constant of the alpha function
-    Return
-    ------
-    rate: Vector{Float32}
-        Vector of rates in Hz
-"""
-function convolve(spiketime::Vector{Float32}; interval::AbstractRange, τ = 100.0f0)
-    rate = zeros(Float32, length(interval))
-    @inbounds for i in eachindex(interval)
-        v = 0
-        t = Float32(interval[i])
-        τ = Float32(τ)
-        @simd for t0 in spiketime
-            @fastmath if (t > t0 && ((t - t0) / τ) < 10)
-                v += alpha_function(t, t0 = t0, τ = τ)
-            end
-        end
-        rate[i] = v
-    end
-    return rate ## Hz
-end
-
-"""
     merge_spiketimes(spikes::Vector{NNSpikes}; type=:exc, pop=nothing, cache=false, kwargs...)
 
     Merge the spiketimes of a vector of NNSpikes into a single vector of spiketimes. The spiketimes are sorted by neuron id.
@@ -123,7 +74,6 @@ end
 
 
 
-
 """
     merge_spiketimes(spikes::Vector{Spiketimes}; )
 
@@ -152,111 +102,6 @@ function merge_spiketimes(spikes::Vector{Spiketimes};)
     end
     return sort!.(neurons)
 end
-
-
-"""
-    spikes_to_rates(spikes::Union{Vector{NNSpikes}, Spiketimes}, network::Params; interval::AbstractVector=[], sampling = 25, τ=25,ttf=-1, tt0= -1, cache=true, pop::Union{Nothing,Vector{Int}}=nothing,kwargs...)
-
-    Convert spiketimes to rates.
-    Use the alpha function to convolve the spiketimes with a time constant τ.
-
-    Parameters
-    ----------
-    spikes: Union{Vector{NNSpikes}, Spiketimes}
-        Vector of spiketimes or NNSpikes
-    network: Params
-        Network parameters
-    interval: AbstractVector
-        Time interval to evaluate the rate
-    sampling: Int
-        Sampling rate in milliseconds
-    τ: Int
-        Time constant of the alpha function
-    ttf: Int
-        Final time of the simulation
-    tt0: Int
-        Initial time of the simulation
-    cache: Bool
-        If true, read the spiketimes from the file
-    pop: Union{Nothing,Vector{Int}}
-        Population to evaluate the rate
-    kwargs: Dict
-        Keyword arguments
-    Return
-    ------
-    rate: Vector{Float32}
-        Vector of rates in Hz
-"""
-function spikes_to_rates(
-    spikes::Union{Vector{NNSpikes},Spiketimes},
-    network::Params;
-    interval::AbstractVector = [],
-    sampling = 25,
-    τ = 25,
-    ttf = -1,
-    tt0 = -1,
-    cache = true,
-    pop::Union{Symbol,Vector{Int}},
-    kwargs...,
-)
-    @unpack stim, net = network
-    if isempty(interval)
-        tt0 = tt0 > 0 ? tt0 : sampling
-        ttf = ttf > 0 ? ttf : stim.simtime
-        interval = tt0:sampling:ttf
-    end
-
-    if isa(spikes, Vector{NNSpikes})
-        populations = cumsum([0, network.net.tripod, network.net.sst])
-        labels = [:exc, :sst, :pv]
-        ss = Vector{Spiketimes}()
-        for i in eachindex(populations)
-            @debug "merge population: $(labels[i])"
-            push!(ss, merge_spiketimes(spikes; type = labels[i], cache = cache, pop = pop))
-        end
-        spiketimes = vcat(ss...)
-    else
-        spiketimes = spikes
-    end
-    spiketimes = pop == :ALL ? spiketimes : spiketimes[pop]
-    # return spiketimes
-    @debug "Spikes to interval"
-    @debug "convolve to rate"
-    rates = tmap(
-        n -> convolve(spiketimes[n], interval = interval, τ = τ),
-        eachindex(spiketimes),
-    )
-    # rates = vcat(rates'...)
-    return rates, interval
-end
-
-function spikes_to_rates(
-    spiketimes::Spiketimes;
-    interval::AbstractVector = [],
-    sampling = 25,
-    τ = 25,
-    ttf,
-    tt0,
-    pop::Union{Symbol,Vector{Int}},
-    kwargs...,
-)
-    if isempty(interval)
-        tt0 = tt0 > 0 ? tt0 : sampling
-        ttf = ttf > 0 ? ttf : stim.simtime
-        interval = tt0:sampling:ttf
-    end
-    spiketimes = pop == :ALL ? spiketimes : spiketimes[pop]
-    # return spiketimes
-    @debug "Spikes to interval"
-    @debug "convolve to rate"
-    rates = tmap(
-        n -> convolve(spiketimes[n], interval = interval, τ = τ),
-        eachindex(spiketimes),
-    )
-    # rates = vcat(rates'...)
-    return rates, interval
-end
-
 
 """
     spikes_to_features(spikes::Union{Vector{NNSpikes}, Spiketimes}, network::Params; timeshift=50, kwargs...)
