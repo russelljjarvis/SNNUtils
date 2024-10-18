@@ -155,9 +155,9 @@ function firing_rate(spikes::BitArray{2}; time_step = dt, window = 10)
     # weights[1:round(Int, Δt/2)].=0
     weights /= sum(weights)
     for (n, cell) in enumerate(eachrow(spikes))
-        for x = 1:size(rate)[2]-1
+        for x = 1:(size(rate)[2]-1)
             # rate[n, x]= mean(running(sum, spikes[n,:],window, weights)[1+Δt*(x-1):Δt*x])
-            rate[n, x] = sum(spikes[n, 1+Δt*(x-1):Δt*x])
+            rate[n, x] = sum(spikes[n, (1+Δt*(x-1)):(Δt*x)])
         end
         rate[n, :] .= runmean(rate[n, :], round(Int, 1 / time_step), weights)
     end
@@ -200,7 +200,7 @@ function average_potential(
         x = 1 + (n - 1) * slide_offset
         # slide*(slide_offset+1):slide:slide*time_points)
         average[n, :] =
-            mean(membrane[:, max_duration.(x:round(Int, window / 10):x+window)], dims = 2)
+            mean(membrane[:, max_duration.(x:round(Int, window/10):(x+window))], dims = 2)
     end
     return average
 end

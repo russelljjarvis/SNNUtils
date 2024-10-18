@@ -41,7 +41,7 @@ function epop_cluster(seq::Encoding, ee::Array{Float32,2})
     _weights = zeros(length(populations), length(populations))
     for (n, pop1) in enumerate(populations)
         for (m, pop2) in enumerate(populations)
-            _weights[n, m] = mean(ee[pop1, pop2][ee[pop1, pop2].>0])
+            _weights[n, m] = mean(ee[pop1, pop2][ee[pop1, pop2] .> 0])
         end
     end
     return _weights

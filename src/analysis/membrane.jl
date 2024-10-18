@@ -26,9 +26,9 @@ function score_membrane(; path, tt0::Int = 0)
         idxs = idxs,
         save_path = save_path,
         feats_set = (;
-            :currents => n_feat+1:2*n_feat,
+            :currents => (n_feat+1):(2*n_feat),
             :membrane => 1:n_feat,
-            :all => 1:2*n_feat,
+            :all => 1:(2*n_feat),
         ),
     )
 end

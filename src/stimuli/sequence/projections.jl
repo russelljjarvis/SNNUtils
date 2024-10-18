@@ -104,7 +104,7 @@ function get_pop_neurons(seq::Encoding; n_neurons = 1, rec_mixed = false)
     track_neurons = Vector{Int64}()
     names = Vector{Vector{Any}}()
 
-    for i in eachindex(seq.populations[1:end-1])
+    for i in eachindex(seq.populations[1:(end-1)])
         neurons = unique_population(i, seq)[1:n_neurons]
         for neuron in neurons
             push!(track_neurons, neuron)

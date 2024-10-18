@@ -10,7 +10,7 @@ abstract type AbstractNetParams end
 abstract type AbstractLearnParams end
 abstract type AbstractEncoding end
 
-abstract type AbstractNeuronParams end
+abstract type AbstractPopulationParams end
 abstract type AbstractSynParams end
 abstract type AbstractConnMap end
 abstract type AbstractConnections end
@@ -34,7 +34,7 @@ export SNNDataTypes, Tracker
 abstract type NNParams end
 abstract type NNChunks end
 
-@with_kw struct NeuronModels{T<:SNN.AbstractNeuronParameter} <: AbstractNeuronParams
+@with_kw struct NeuronModels{T<:SNN.AbstractPopulationParameter} <: AbstractPopulationParams
     AdEx::T
     LIF_sst::T
     LIF_pv::T
@@ -68,8 +68,8 @@ end
     learn_exc::Bool = true
     learn_sst::Bool = true
     learn_pv::Bool = true
-    stdp::SNN.AbstractSynapseParameter
-    istdp::SNN.AbstractSynapseParameter
+    stdp::SNN.AbstractConnectionParameter
+    istdp::SNN.AbstractConnectionParameter
     nmda_weights::Bool = true
 end
 
@@ -166,6 +166,6 @@ struct Params
     learn::AbstractLearnParams
     store::AbstractStoreParams
     W::AbstractConnections
-    neurons::AbstractNeuronParams
+    neurons::AbstractPopulationParams
     synapses::AbstractSynParams
 end

@@ -30,7 +30,7 @@ function spikes_to_features(spikes, input_duration::Int64, batch_duration::Real)
     n_feat = size(_feat)[1]
     features = zeros(Float32, n_feat, length(spikes) * n_samples)
     for (n, batch) in enumerate(spikes)
-        features[:, 1+(n-1)*n_samples:n*n_samples] .=
+        features[:, (1+(n-1)*n_samples):(n*n_samples)] .=
             _spike_to_features(batch, input_duration, batch_duration)
     end
     return features, ceil(Int, n_feat / 2)
@@ -68,11 +68,12 @@ function _spike_to_features(
         _init_time = ss[4] - batch_duration
         _interval = _init_time .+ (interval_duration * (i - 1), interval_duration * i)
         features[1:x_exc, i] .= get_spike_rate(ss[1], interval = _interval)
-        features[x_exc.+(1:x_sst), i] .= get_spike_rate(ss[2], interval = _interval)
-        features[x_exc+x_sst.+(1:x_pv), i] .= get_spike_rate(ss[3], interval = _interval)
-        features[n_cells.+(1:x_exc), i] .= get_CV(ss[1], interval = _interval)
-        features[n_cells.+x_exc.+(1:x_sst), i] .= get_CV(ss[2], interval = _interval)
-        features[n_cells.+x_exc.+x_sst.+(1:x_pv), i] .= get_CV(ss[3], interval = _interval)
+        features[x_exc .+ (1:x_sst), i] .= get_spike_rate(ss[2], interval = _interval)
+        features[x_exc+x_sst .+ (1:x_pv), i] .= get_spike_rate(ss[3], interval = _interval)
+        features[n_cells .+ (1:x_exc), i] .= get_CV(ss[1], interval = _interval)
+        features[n_cells .+ x_exc .+ (1:x_sst), i] .= get_CV(ss[2], interval = _interval)
+        features[n_cells .+ x_exc .+ x_sst .+ (1:x_pv), i] .=
+            get_CV(ss[3], interval = _interval)
     end
     return features
 
@@ -86,7 +87,7 @@ function states_to_features(states::Vector{NNStates}; average_points = true)
     n_feat = size(_feat)[1]
     features = zeros(Float32, n_feat, length(states) * n_samples)
     for (n, state) in enumerate(states)
-        pos = 1+(n-1)*n_samples:n*n_samples
+        pos = (1+(n-1)*n_samples):(n*n_samples)
         features[:, pos] .=
             _state_to_features(state.mem, state.cur; average = average_points)
     end

@@ -6,7 +6,7 @@ function get_relative_path(path::String)
             N = n
         end
     end
-    return joinpath(dirs[N+1:end]...)
+    return joinpath(dirs[(N+1):end]...)
 end
 
 function clean_store_data(store)

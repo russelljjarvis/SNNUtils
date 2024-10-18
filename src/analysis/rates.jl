@@ -120,9 +120,9 @@ function score_spikes(; path::String, tt0::Int = -1)
         idxs = idxs,
         save_path = save_path,
         feats_set = (;
-            :cv => n_neurons+1:2*n_neurons,
+            :cv => (n_neurons+1):(2*n_neurons),
             :rate => 1:n_neurons,
-            :all => 1:2*n_neurons,
+            :all => 1:(2*n_neurons),
         ),
     )
 end
@@ -142,9 +142,9 @@ function target_pop_rate(
         throw("symbol: 1 words, 2 phonemes")
     end
     target_interval =
-        1+round(Int, stim.duration / dt * (interval - 1)):round(
+        (1+round(Int, stim.duration / dt*(interval-1))):round(
             Int,
-            stim.duration / dt * interval,
+            stim.duration / dt*interval,
         )
     println(target_interval)
     words = Set(seq.sequence[symbol, :])

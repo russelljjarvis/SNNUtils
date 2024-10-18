@@ -289,7 +289,7 @@ function word_offsets(seq)
     for w in TNN.words(seq, indices = true)
         all_n = seq.sequence[1, :] .== w
         final = Vector{Int}()
-        for i in eachindex(all_n[1:end-1])
+        for i in eachindex(all_n[1:(end-1)])
             # @show all_n[i] all_n[i+1] 
             (all_n[i] && !all_n[i+1]) && (push!(final, i))
         end

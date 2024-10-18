@@ -126,7 +126,7 @@ function pseudoword_sequence(seq::Encoding, stim::StimParams)
     sequence = zeros(Int64, 2, stim.seq_length)
     for (n, (w, p)) in enumerate(zip(words, phonemes))
         if w !== mapping[null]
-            w = w[clean_string+1:end]
+            w = w[(clean_string+1):end]
         end
         sequence[1, n] = r_mapping[w]
         sequence[2, n] = r_mapping[p]
