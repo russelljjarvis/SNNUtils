@@ -70,7 +70,7 @@ function TripodBalancedNoise(
     return (syn = synapses, pop = populations)
 end
 
-function TripodExcNoise(Tripod_pop; N_E = 1000, ν_s = 200Hz, ν_d = 200Hz, σ_s = 2.0f0)
+function TripodExcNoise(Tripod_pop; N_E = 100, ν_s = 200Hz, ν_d = 200Hz, σ_s = 2.0f0)
     Ed = SNN.Poisson(N = N_E, param = SNN.PoissonParameter(rate = ν_d))
     Es = SNN.Poisson(N = N_E, param = SNN.PoissonParameter(rate = ν_s))
     exc_d1 = SNN.CompartmentSynapse(Ed, Tripod_pop, :d1, :exc, p = 0.2, σ = 1.0)
