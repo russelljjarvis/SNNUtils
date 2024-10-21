@@ -253,35 +253,6 @@ function get_sign_at_time(time::Real; seq::Encoding, dim::Int)
 end
 
 
-# Return all intervals that contain a certain word
-function get_word_intervals(word_index::Int, seq::Encoding)
-    word = seq.mapping[word_index]
-    n_phonemes = length(seq.lemmas[word])
-    word_collect = Vector{Vector{Float32}}()
-    _word_indices = Vector{Int}()
-    word_indices = Vector{Vector{Int}}()
-    c = 0
-    interval = [-1, -1]
-    for ww in eachindex(seq.sequence[1, :])
-        w = seq.sequence[1, ww]
-        if w == word_index
-            if c == 0
-                empty!(_word_indices)
-                interval[1] = (ww - 1) * seq.duration
-            end
-            push!(_word_indices, ww)
-            c += 1
-            if c == n_phonemes
-                interval[2] = ww * seq.duration
-                push!(word_indices, copy(_word_indices))
-                push!(word_collect, copy(interval))
-                z = Vector{Int}
-                c = 0
-            end
-        end
-    end
-    return word_collect, word_indices
-end
 
 #Return all the indices in the sequence where the words end
 function word_offsets(seq)

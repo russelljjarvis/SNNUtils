@@ -18,6 +18,7 @@ include("structs.jl")
 include("IO/base.jl")
 include("analysis/base.jl")
 include("stimuli/base.jl")
+include("models/base.jl")
 
 
 end # module

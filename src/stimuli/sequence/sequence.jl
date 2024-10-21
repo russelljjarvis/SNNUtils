@@ -1,3 +1,14 @@
+
+
+
+function reverse_dictionary(dictionary::Dict)
+    reverse = Dict()
+    for key in keys(dictionary)
+        push!(reverse, dictionary[key] => key)
+    end
+    return reverse
+end
+
 """
 Create the sequence encoder for the network:
 	1. Create target sub-populations of 'density*n_tripods' for each symbol.
@@ -250,3 +261,4 @@ function seq_from_bioseqlearn(
     ),
     store_interval
 end
+
