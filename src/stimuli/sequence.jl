@@ -5,7 +5,7 @@ function generate_sequence(config; seed = nothing )
         Random.seed!(seed)
     end 
 
-    @unpack seq_length, ph_duration, dictionary  = config
+    @unpack seq_length, ph_duration, dictionary = config
 
     silent_intervals = 1
     null_symbol = "_"
@@ -17,8 +17,8 @@ function generate_sequence(config; seed = nothing )
     )
 
 
-    all_words = Set(filter(x -> x !== null_symbol, words))
-    all_phonemes = Set(filter(x -> x !== null_symbol, phonemes))
+    all_words = sort(collect(Set(filter(x -> x !== null_symbol, words)))) |> Vector{String}
+    all_phonemes = sort(collect(Set(filter(x -> x !== null_symbol, phonemes)))) |> Vector{String}
 
     symbols = collect(union(all_words,all_phonemes))
 
@@ -42,36 +42,66 @@ function generate_sequence(config; seed = nothing )
 
     ## create the populations
     ## sequence from the initial word sequence
-    sequence = fill(null, 3, seq_length)
-    intervals = []
-    for (n, (w, p)) in enumerate(zip(words, phonemes))
-        sequence[1, n] = r_mapping[w]
-        sequence[2, n] = r_mapping[p]
-        sequence[3, n] = ph_duration[p]
+    if haskey(config,:init_silence)
+        sequence = fill(null, 3, seq_length+1)
+        sequence[1, 1] = null
+        sequence[2, 1] = null
+        sequence[3, 1] = config.init_silence
+        for (n, (w, p)) in enumerate(zip(words, phonemes))
+            sequence[1, 1+n] = r_mapping[w]
+            sequence[2, 1+n] = r_mapping[p]
+            sequence[3, 1+n] = ph_duration[p]
+        end
+    else
+        sequence = fill(null, 3, seq_length)
+        for (n, (w, p)) in enumerate(zip(words, phonemes))
+            sequence[1, n] = r_mapping[w]
+            sequence[2, n] = r_mapping[p]
+            sequence[3, n] = ph_duration[p]
+        end
     end
 
 
-    return (sequence=sequence, id2string = mapping, string2id = r_mapping, dict=dictionary, intervals = intervals)
+    line_id = (phonemes=2, words=1, duration=3)
+
+
+    return (sequence=sequence, 
+            id2string = mapping, 
+            string2id = r_mapping, 
+            dict=dictionary, 
+            symbols=(phonemes = all_phonemes, 
+            words = all_words), 
+            null = null,
+            line_id = line_id)
 end
 
-##
-# Return all intervals that contain a certain word
-function word_intervals(word_index::Int, sequence)
-    @unpack dict, id2string, sequence = sequence
-    # n_phonemes = length(dict[seq.id2string[word_index]])
+function sign_intervals(sign_index::Int, sequence)
+    @unpack dict, id2string, sequence, symbols, line_id = sequence
+    sign_line_id = -1
+    for k in keys(symbols)
+        if id2string[sign_index] in getfield(symbols,k)
+            sign_line_id = getfield(line_id,k)
+            break
+        end
+    end
+    if sign_line_id == -1
+        throw(ErrorException("Sign index not found"))
+    end
+
     intervals = Vector{Vector{Float32}}()
-    cum_duration = cumsum(sequence[3,:])
+    cum_duration = cumsum(sequence[line_id.duration,:])
     _end = 1
     interval = [-1, -1]
+    my_seq = sequence[sign_line_id, :]
     while !isnothing(_end)  || !isnothing(_start)
-        _start = findfirst(x -> x == word_index, sequence[1, _end:end])
+        _start = findfirst(x -> x == sign_index, my_seq[_end:end])
         if isnothing(_start)
             break
         else
             _start += _end-1
         end
-        _end  = findfirst(x -> x != word_index, sequence[1, _start:end]) + _start - 1
-        interval[1] = cum_duration[_start] - sequence[3,_start]
+        _end  = findfirst(x -> x != sign_index, my_seq[_start:end]) + _start - 1
+        interval[1] = cum_duration[_start] - sequence[line_id.duration,_start]
         interval[2] = cum_duration[_end-1]
         push!(intervals, interval)
     end
@@ -79,215 +109,25 @@ function word_intervals(word_index::Int, sequence)
 
 end
 
-##
-    # _start = findfirst(x -> x == word_index, sequence[_end, :])
-    # _end  = findfirst(x -> x != word_index, sequence[1, _start:end])
+function sequence_end(seq)
+    """
+    Return the end of the sequence
+    """
+    @unpack line_id, sequence = seq
+    return sum(sequence[line_id.duration, :])
+end
 
-    # _word_indices = Vector{Int}()
-    # word_indices = Vector{Vector{Int}}()
-    # interval = [-1, -1]
-    # for ww in eachindex(sequence[1, :])
-    #     w = sequence[1, ww]
-    #     if w == word_index
-    #         if c == 0
-    #             empty!(_word_indices)
-    #             interval[1] = (ww - 1) * seq.duration
-    #         end
-    #         push!(_word_indices, ww)
-    #         c += 1
-    #         if c == n_phonemes
-    #             interval[2] = ww *(duration)
-    #             push!(word_indices, copy(_word_indices))
-    #             push!(word_collect, copy(interval))
-    #             z = Vector{Int}
-    #             c = 0
-    #         end
-    #     end
-    # end
-    # return word_collect, word_indices
-
-
-
-# function randomize_sequence(seq::Encoding, stim::StimParams)
-#     """
-#  Get a sequence and produce a new random sequence with the same words and
-#  the length defined in the stimulus parameters
-#     """
-#     @unpack sequence, populations, dendrites, mapping, lemmas, null = seq
-#     r_mapping = reverse_dictionary(mapping)
-#     words, phonemes = get_word_sequence(
-#         stim.seq_length,
-#         lemmas,
-#         mapping[null],
-#         silent_intervals = stim.silence,
-#     )
-
-#     sequence = zeros(Int64, 2, stim.seq_length)
-#     for (n, (w, p)) in enumerate(zip(words, phonemes))
-#         sequence[1, n] = r_mapping[w]
-#         sequence[2, n] = r_mapping[p]
-#     end
-
-#     return Encoding(
-#         populations = populations,
-#         dendrites = dendrites,
-#         sequence = sequence,
-#         mapping = mapping,
-#         lemmas = lemmas,
-#         duration = stim.duration,
-#         null = null,
-#     )#, pop_to_symbol, symbol_to_pop)
-# end
-
-# function pseudoword_sequence(seq::Encoding, stim::StimParams)
-#     """
-#  Get a sequence and produce a new random sequence with the same words and
-#  the length defined in the stimulus parameters
-#     """
-#     @unpack sequence, populations, dendrites, mapping, lemmas, null = seq
-#     r_mapping = reverse_dictionary(mapping)
-
-#     pseudos =
-#         map(collect(eachindex(lemmas))) do x
-#             ll = [sample(collect(vcat(values(lemmas)...))) for x = 1:length(lemmas[x])]
-#             string("pseudo_", x) => ll
-#         end |> Dict
-
-#     words, phonemes = get_word_sequence(
-#         stim.seq_length,
-#         pseudos,
-#         mapping[null],
-#         silent_intervals = stim.silence,
-#     )
-
-#     clean_string = length("pseudo_")
-#     sequence = zeros(Int64, 2, stim.seq_length)
-#     for (n, (w, p)) in enumerate(zip(words, phonemes))
-#         if w !== mapping[null]
-#             w = w[(clean_string+1):end]
-#         end
-#         sequence[1, n] = r_mapping[w]
-#         sequence[2, n] = r_mapping[p]
-#     end
-
-#     return Encoding(
-#         populations = populations,
-#         dendrites = dendrites,
-#         sequence = sequence,
-#         mapping = mapping,
-#         lemmas = pseudos,
-#         duration = stim.duration,
-#         null = null,
-#     )#, pop_to_symbol, symbol_to_pop)
-# end
-
-
-
-
-# function randomize_sequence!(seq::Encoding)
-#     """
-#  Get a sequence and produce a new random sequence with the same words and
-#  the length defined in the stimulus parameters
-#     """
-#     @unpack sequence, populations, dendrites, mapping, lemmas, null = seq
-#     r_mapping = reverse_dictionary(mapping)
-#     seq_length = size(sequence, 2)
-#     words, phonemes = get_word_sequence(seq_length, lemmas, mapping[null])
-#     for (n, (w, p)) in enumerate(zip(words, phonemes))
-#         sequence[1, n] = r_mapping[w]
-#         sequence[2, n] = r_mapping[p]
-#     end
-# end
-
-# function get_bioseq_dictionary_info(dictionary, key = "test")
-#     unique_elements = Set()
-#     epochs = []
-#     for epoch in keys(dictionary[key])
-#         push!(epochs, dictionary[key][epoch])
-#         for element in dictionary[key][epoch]
-#             push!(unique_elements, element)
-#         end
-#     end
-#     return collect(unique_elements), epochs
-# end
-
-# function make_unique_sequence(epochs)
-#     @assert all(length(epoch) == length(epochs[1]) for epoch in epochs)
-#     interval_length = maximum(length.(epochs)) + 1
-#     sequence = Vector{String}()
-#     for epoch in epochs
-#         epoch_length = length(epoch)
-#         add_silence = interval_length - epoch_length
-#         append!(sequence, epoch)
-#         for _ = 1:add_silence
-#             append!(sequence, ["#"])
-#         end
-#     end
-#     @assert(all(length(collection) == length(epochs[1]) for collection in epochs))
-#     return sequence
-# end
-
-# function seq_from_bioseqlearn(
-#     net::NetParams,
-#     stim::StimParams,
-#     dictionary::Dict,
-#     stage = "test",
-# )
-#     phonemes, epochs = get_bioseq_dictionary_info(dictionary, stage)
-#     @show phonemes
-#     words = []
-#     null_symbol = "#"
-
-#     all_words = Set(filter(x -> x !== null_symbol, words))
-#     all_phonemes = Set(filter(x -> x !== null_symbol, phonemes))
-#     stim.symbols = length(all_words) + length(all_phonemes)
-
-#     ## create mapping between numbers and phonemes
-#     mapping = Dict()
-#     r_mapping = Dict()
-#     for (n, s) in enumerate(all_phonemes)
-#         n = n + length(all_words)
-#         push!(mapping, n => s)
-#         push!(r_mapping, s => n)
-#     end
-
-#     ## Add the null symbol
-#     stim.symbols += 1
-#     null = stim.symbols
-#     push!(mapping, null => "#")
-#     push!(r_mapping, "#" => null)
-
-#     ## Create the sequence
-#     sequence_phonemes = make_unique_sequence(epochs)
-#     seq_length = length(sequence_phonemes)
-#     ## sequence from the initial word sequence
-#     sequence = fill(null, 2, seq_length)
-#     for (n, p) in enumerate(sequence_phonemes)
-#         sequence[2, n] = r_mapping[p]
-#     end
-#     stim.seq_length = seq_length
-#     stim.simtime = seq_length * stim.duration
-#     store_interval = (1 + length(epochs[1])) * stim.duration
-#     @show store_interval * length(epochs), stim.simtime
-
-#     ## create the populations
-#     ## obtain the populations with the dendritic
-#     ## characteristics
-#     projections, dendrites = get_projections(net.tripod, stim)
-#     ## Set null connections to the null symbol
-#     projections[null] = Vector{Int}()
-#     @info "stimuli:", stim.duration, stim.silence, stim.seq_length
-#     return Encoding(
-#         populations = projections,
-#         dendrites = dendrites,
-#         sequence = sequence,
-#         mapping = mapping,
-#         lemmas = dictionary,
-#         duration = Float32(stim.duration),
-#         null = null,
-#     ),
-#     store_interval
-# end
+""""
+    Return true if the time `x` is in any of the intervals
+"""
+function time_in_interval(x::Float32, intervals::Vector{Vector{Float32}})
+    for interval in intervals
+        if x >= interval[1] && x <= interval[2]
+            return true
+        end
+    end
+    return false
+end
 
 ## create a random sequence of words with respective phones
 function get_words(
@@ -366,4 +206,4 @@ end
 #     return new_seq
 # end
 
-export generate_sequence, get_words, word_intervals
+export generate_sequence, get_words, sign_intervals, time_in_interval, sequence_end

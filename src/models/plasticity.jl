@@ -36,17 +36,17 @@
 
 
 quaresima2023 = (
-        iSTDP_rate = SNN.iSTDPParameterPotential(η = 0.2Hz, v0 = -70mV, τy = 5ms, Wmax = 41.4pF, Wmin = 2.78pF), 
-        iSTDP_potential =SNN.iSTDPParameterPotential(η = 0.2Hz, v0 = -70mV, τy = 5ms, Wmax = 41.4pF, Wmin = 2.78pF),        
+        iSTDP_rate = SNN.iSTDPParameterRate(η = 1., τy = 5ms, r=5Hz, Wmax = 273.4pF, Wmin = 0.1pF), 
+        iSTDP_potential =SNN.iSTDPParameterPotential(η = 0.1, v0 = -70mV, τy = 200ms, Wmax = 273.4pF, Wmin = 0.1pF),        
         vstdp = SNN.vSTDPParameter(
-        A_LTD = 4.0f-5,  #ltd strength          # made 10 times slower
-        A_LTP = 14.0f-5, #ltp strength
-        θ_LTD = -40.0,  #ltd voltage threshold # set higher
-        θ_LTP = -20.0,  #ltp voltage threshold
-        τu = 15.0,  #timescale for u variable
-        τv = 45.0,  #timescale for v variable
-        τx = 20.0,  #timescale for x variable
-        Wmin = 1.78,  #minimum ee strength
-        Wmax = 41.4,   #maximum ee strength
-    )
+                A_LTD = 4.0f-5,  #ltd strength          # made 10 times slower
+                A_LTP = 14.0f-5, #ltp strength
+                θ_LTD = -40.0,  #ltd voltage threshold # set higher
+                θ_LTP = -20.0,  #ltp voltage threshold
+                τu = 15.0,  #timescale for u variable
+                τv = 45.0,  #timescale for v variable
+                τx = 20.0,  #timescale for x variable
+                Wmin = 1.78,  #minimum ee strength
+                Wmax = 41.4,   #maximum ee strength
+            )
     )
