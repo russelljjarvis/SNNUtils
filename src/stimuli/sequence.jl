@@ -75,11 +75,12 @@ function generate_sequence(config; seed = nothing )
             line_id = line_id)
 end
 
-function sign_intervals(sign_index::Int, sequence)
-    @unpack dict, id2string, sequence, symbols, line_id = sequence
+function sign_intervals(sign::Symbol, sequence)
+    @unpack dict, id2string, string2id, sequence, symbols, line_id = sequence
+    ## Identify the line of the sequence that contains the sign
     sign_line_id = -1
     for k in keys(symbols)
-        if id2string[sign_index] in getfield(symbols,k)
+        if sign in getfield(symbols,k)
             sign_line_id = getfield(line_id,k)
             break
         end
@@ -88,25 +89,25 @@ function sign_intervals(sign_index::Int, sequence)
         throw(ErrorException("Sign index not found"))
     end
 
+    ## Find the intervals where the sign is present
     intervals = Vector{Vector{Float32}}()
     cum_duration = cumsum(sequence[line_id.duration,:])
     _end = 1
     interval = [-1, -1]
     my_seq = sequence[sign_line_id, :]
     while !isnothing(_end)  || !isnothing(_start)
-        _start = findfirst(x -> x == sign_index, my_seq[_end:end])
+        _start = findfirst(x -> x == string2id[sign], my_seq[_end:end])
         if isnothing(_start)
             break
         else
             _start += _end-1
         end
-        _end  = findfirst(x -> x != sign_index, my_seq[_start:end]) + _start - 1
+        _end  = findfirst(x -> x != string2id[sign], my_seq[_start:end]) + _start - 1
         interval[1] = cum_duration[_start] - sequence[line_id.duration,_start]
         interval[2] = cum_duration[_end-1]
         push!(intervals, interval)
     end
     return intervals
-
 end
 
 function sequence_end(seq)
