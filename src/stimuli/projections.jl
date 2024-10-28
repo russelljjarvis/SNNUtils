@@ -70,7 +70,7 @@ function TripodExternalInput(
                 i[j] = strength
             end
         end
-        s = SNN.CompartmentSynapse(input_pop, population, Symbol("d$n"), :exc, w = W)
+        s = SNN.CompartmentSynapse(input_pop, population, Symbol("d$n"), :he, w = W)
         push!(synapses, s)
     end
     return (syn = synapses, pop = input_pop)

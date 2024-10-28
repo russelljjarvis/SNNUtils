@@ -38,7 +38,7 @@ function TripodBalancedNoise(
         I,
         Tripod_pop,
         :d1,
-        :inh,
+        :hi,
         p = 0.2,
         μ = 1,
         param = SNN.iSTDPParameterPotential(v0 = v0),
@@ -47,7 +47,7 @@ function TripodBalancedNoise(
         I,
         Tripod_pop,
         :d2,
-        :inh,
+        :hi,
         p = 0.2,
         μ = 1,
         param = SNN.iSTDPParameterPotential(v0 = v0),
@@ -56,14 +56,14 @@ function TripodBalancedNoise(
         I,
         Tripod_pop,
         :s,
-        :inh,
+        :hi,
         p = 0.4,
         μ = 1,
         param = SNN.iSTDPParameterRate(r = r0),
     )
-    exc_d1 = SNN.CompartmentSynapse(E, Tripod_pop, :d1, :exc, p = 0.2, μ = 1.0)
-    exc_d2 = SNN.CompartmentSynapse(E, Tripod_pop, :d2, :exc, p = 0.2, μ = 1.0)
-    exc_s = SNN.CompartmentSynapse(E, Tripod_pop, :s, :exc, p = 0.2, μ = μ_s)
+    exc_d1 = SNN.CompartmentSynapse(E, Tripod_pop, :d1, :he, p = 0.2, μ = 1.0)
+    exc_d2 = SNN.CompartmentSynapse(E, Tripod_pop, :d2, :he, p = 0.2, μ = 1.0)
+    exc_s = SNN.CompartmentSynapse(E, Tripod_pop, :s, :he, p = 0.2, μ = μ_s)
 
     synapses = dict2ntuple(@strdict inh_d1 inh_d2 inh_s exc_d1 exc_d2 exc_s)
     populations = dict2ntuple(@strdict I E)
@@ -73,9 +73,9 @@ end
 function TripodExcNoise(Tripod_pop; N_E = 1000, ν_s = 200Hz, ν_d = 200Hz, μ_s = 2.0f0)
     Ed = SNN.Poisson(N = N_E, param = SNN.PoissonParameter(rate = ν_d))
     Es = SNN.Poisson(N = N_E, param = SNN.PoissonParameter(rate = ν_s))
-    exc_d1 = SNN.CompartmentSynapse(Ed, Tripod_pop, :d1, :exc, p = 0.2, μ = 1.0)
-    exc_d2 = SNN.CompartmentSynapse(Ed, Tripod_pop, :d2, :exc, p = 0.2, μ = 1.0)
-    exc_s = SNN.CompartmentSynapse(Es, Tripod_pop, :s, :exc, p = 0.2, μ = μ_s)
+    exc_d1 = SNN.CompartmentSynapse(Ed, Tripod_pop, :d1, :he, p = 0.2, μ = 1.0)
+    exc_d2 = SNN.CompartmentSynapse(Ed, Tripod_pop, :d2, :he, p = 0.2, μ = 1.0)
+    exc_s = SNN.CompartmentSynapse(Es, Tripod_pop, :s, :he, p = 0.2, μ = μ_s)
     synapses = dict2ntuple(@strdict exc_d1 exc_d2 exc_s)
     populations = dict2ntuple(@strdict Ed Es)
     return (syn = synapses, pop = populations)
@@ -87,7 +87,7 @@ function CompartmentExcNoise(pop, targets, rates; N_E = 1000, p0 = 0.2)
     synapses = Dict{String,Any}()
     for (target, rate) in zip(targets, rates)
         E = SNN.Poisson(N = N_E, param = SNN.PoissonParameter(rate = rate))
-        exc = SNN.CompartmentSynapse(E, pop, target, :exc, p = p0, μ = 1.0)
+        exc = SNN.CompartmentSynapse(E, pop, target, :he, p = p0, μ = 1.0)
         push!(synapses, "E_to_$target" => exc)
         push!(populations, "E_$target" => E)
     end
