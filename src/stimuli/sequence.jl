@@ -5,7 +5,7 @@ function generate_sequence(config; seed = nothing )
         Random.seed!(seed)
     end 
 
-    @unpack seq_length, ph_duration, dictionary = config
+    @unpack seq_length, ph_duration, ph_space_duration, dictionary = config
 
     silent_intervals = 1
     null_symbol = :_
@@ -16,11 +16,10 @@ function generate_sequence(config; seed = nothing )
         silent_intervals = silent_intervals,
     )
 
-
     all_words = sort(collect(Set(filter(x -> x !== null_symbol, words)))) |> Vector{Symbol}
     all_phonemes = sort(collect(Set(filter(x -> x !== null_symbol, phonemes)))) |> Vector{Symbol}
 
-    symbols = collect(union(all_words,all_phonemes))
+    symbols = collect(union(all_words, all_phonemes))
 
     ## create mapping between numbers and phonemes
     mapping = Dict()
@@ -42,6 +41,7 @@ function generate_sequence(config; seed = nothing )
 
     ## create the populations
     ## sequence from the initial word sequence
+    ph_duration_values = []
     if haskey(config,:init_silence)
         sequence = fill(null, 3, seq_length+1)
         sequence[1, 1] = null
@@ -50,14 +50,27 @@ function generate_sequence(config; seed = nothing )
         for (n, (w, p)) in enumerate(zip(words, phonemes))
             sequence[1, 1+n] = r_mapping[w]
             sequence[2, 1+n] = r_mapping[p]
-            sequence[3, 1+n] = ph_duration[p]
+            if p in keys(ph_space_duration)
+                min, max = ph_space_duration[p]
+                space_duration = rand(min:max)
+                sequence[3, 1+n] = space_duration
+                push!(ph_duration_values, space_duration)
+            else
+                sequence[3, 1+n] = ph_duration[p]
+            end
         end
     else
         sequence = fill(null, 3, seq_length)
         for (n, (w, p)) in enumerate(zip(words, phonemes))
             sequence[1, n] = r_mapping[w]
             sequence[2, n] = r_mapping[p]
-            sequence[3, n] = ph_duration[p]
+            if p in keys(ph_space_duration)
+                min, max = ph_space_duration[p]
+                space_duration = rand(min:max)
+                sequence[3, n] = space_duration
+            else
+                sequence[3, n] = ph_duration[p]
+            end
         end
     end
 
@@ -147,14 +160,13 @@ function get_words(
         @assert length(weights) == length(dictionary)
         weights = StatsBase.Weights([weights[k] for k in dict_words])
     end
+
     word_count = Dict{Symbol,Int}()
     words = []
     phonemes = []
     _seq_length = 0
 
     initial_words = copy(dict_words)
-    # @info initial_words, dict_words
-    #@TODO 
     make_equal = true
     while _seq_length < seq_length
         if make_equal
@@ -181,12 +193,20 @@ function get_words(
             end
             continue
         end
-        for ph in phs
+        for (i, ph) in enumerate(phs)
             push!(phonemes, ph)
             push!(words, word)
             _seq_length += 1
+
+            # Add the phoneme spacing symbol after each phoneme, except the last
+            if i < length(phs)
+                ph_space_symbol = Symbol("_" * string(word))  # Get the matching symbol for ph
+                push!(phonemes, ph_space_symbol)  # Add space symbol
+                push!(words, word)  # Null for spacing
+                _seq_length += 1
+            end
         end
-        for _ = 1:silent_intervals
+        for _ in 1:silent_intervals
             push!(words, null_symbol)
             push!(phonemes, null_symbol)
             _seq_length += 1
