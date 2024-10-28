@@ -1,7 +1,7 @@
 using StatsBase
 
 function generate_lexicon(config)
-    @unpack seq_length, ph_duration, dictionary = config
+    @unpack ph_duration, dictionary = config
 
 
     all_words = collect(keys(dictionary)) |> Set |> collect |> sort |> Vector{Symbol}
