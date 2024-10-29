@@ -3,7 +3,6 @@ using StatsBase
 function generate_lexicon(config)
     @unpack ph_duration, dictionary = config
 
-
     all_words = collect(keys(dictionary)) |> Set |> collect |> sort |> Vector{Symbol}
     # sort(collect(Set(filter(x -> x !== silence_symbol, words)))) |> Vector{Symbol}
     all_phonemes = collect(values(dictionary)) |> Iterators.flatten |> Set |> collect |> sort |> Vector{Symbol}
@@ -138,6 +137,15 @@ function time_in_interval(x::Float32, intervals::Vector{Vector{Float32}})
     return false
 end
 
+function start_interval(x::Float32, intervals::Vector{Vector{Float32}})
+    for interval in intervals
+        if x >= interval[1] && x <= interval[2]
+            return interval[1]
+        end
+    end
+    return -1
+end
+
 ## create a random sequence of words with respective phones
 function get_words(
     seq_length::Int,
@@ -215,4 +223,4 @@ end
 #     return new_seq
 # end
 
-export generate_sequence, get_words, sign_intervals, time_in_interval, sequence_end, generate_lexicon
+export generate_sequence, get_words, sign_intervals, time_in_interval, sequence_end, generate_lexicon, start_interval
