@@ -21,12 +21,6 @@ EyalGluDend = Glutamatergic(
     ReceptorVoltage(E_rev = 0.0, τr = 8, τd = 35.0, g0 = 1.31, nmda = 1.0f0),
 )
 
-Mg_mM = 1.0f0
-nmda_b = 3.36       #(no unit) parameters for voltage dependence of nmda channels
-# nmda_k   = -0.062     #(1/V) source: http://dx.doi.org/10.1016/j.neucom.2011.04.018)
-nmda_k = -0.077     #Eyal 2018
-EyalNMDA = NMDAVoltageDependency(mg = Mg_mM, b = nmda_b, k = nmda_k)
-
 EyalGluDend_nonmda = Glutamatergic(
     Receptor(E_rev = 0.0, τr = 0.25, τd = 2.0, g0 = 10.0),
     ReceptorVoltage(E_rev = 0.0, τr = 8, τd = 35.0, g0 = 0.0f0, nmda = 0.0f0),
@@ -44,13 +38,19 @@ MilesGabaDend = GABAergic(
 MilesGabaSoma =
     GABAergic(Receptor(E_rev = -75.0, τr = 0.5, τd = 6.0, g0 = 0.265), Receptor())
 
+DuarteGluSoma = Glutamatergic(
+    Receptor(E_rev = 0.0, τr = 0.25, τd = 2.0, g0 = 0.73),
+    ReceptorVoltage(E_rev = 0.0, nmda = 0.0f0),
+)
+
+# EyalNMDA = NMDAVoltageDependency(mg = Mg_mM, b = nmda_b, k = nmda_k)
 
 quaresima2022 = (
         dends  =  [(150um, 400um), (150um, 400um)],
         soma_syn = Synapse(DuarteGluSoma, MilesGabaSoma), # defines glutamaterbic and gabaergic receptors in the soma
         dend_syn = Synapse(EyalGluDend, MilesGabaDend), # defines glutamaterbic and gabaergic receptors in the dendrites
-        NMDA = SNN.EyalNMDA, # NMDA synapse
-        param = SNN.AdExSoma(Vr = -55mV, Vt = -50mV),
+        NMDA = EyalNMDA, # NMDA synapse
+        param = AdExSoma(Vr = -55mV, Vt = -50mV),
 )
 
 export quaresima2022, KochGlu, EyalGluDend, EyalNMDA, EyalGluDend_nonmda, MilesGabaDend, MilesGabaSoma
