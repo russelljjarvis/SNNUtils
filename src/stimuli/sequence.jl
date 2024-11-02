@@ -1,6 +1,89 @@
 using StatsBase
 
-function generate_sequence(config; seed = nothing )
+function generate_lexicon(config)
+    @unpack seq_length, ph_duration, dictionary = config
+
+
+    all_words = collect(keys(dictionary)) |> Set |> collect |> sort |> Vector{Symbol}
+    # sort(collect(Set(filter(x -> x !== silence_symbol, words)))) |> Vector{Symbol}
+    all_phonemes = collect(values(dictionary)) |> Iterators.flatten |> Set |> collect |> sort |> Vector{Symbol}
+    # sort(collect(Set(filter(x -> x !== silence_symbol, phonemes)))) |> Vector{Symbol}
+    symbols = collect(union(all_words,all_phonemes))
+
+    ## create mapping between numbers and phonemes
+    mapping = Dict{Int, Symbol}()
+    r_mapping = Dict{Symbol, Int}()
+    for (n, s) in enumerate(all_words)
+        push!(mapping, n => s)
+        push!(r_mapping, s => n)
+    end
+    for (n, s) in enumerate(all_phonemes)
+        n = n + length(all_words)
+        push!(mapping, n => s)
+        push!(r_mapping, s => n)
+    end
+
+    ## Add the silence symbol
+    silence_symbol = :_
+    silence = length(symbols) + 1
+    push!(mapping, silence => silence_symbol)
+    push!(r_mapping, silence_symbol => silence)
+
+    return (id2string = mapping, 
+            string2id = r_mapping, 
+            dict=dictionary, 
+            symbols=(phonemes = all_phonemes, 
+            words = all_words), 
+            ph_duration = ph_duration, 
+            silence_symbol = silence_symbol)
+end
+
+function generate_sequence(lexicon, config, seed=nothing)
+
+    if seed !== nothing
+        Random.seed!(seed)
+    end 
+
+    @unpack seq_length = config
+    @unpack dict, id2string, string2id, symbols, silence_symbol, ph_duration = lexicon
+    silent_intervals = 1
+    words, phonemes = get_words(
+        seq_length,
+        dict,
+        silence_symbol,
+        silent_intervals = silent_intervals,
+    )
+
+    ## create the populations
+    ## sequence from the initial word sequence
+    silence = string2id[silence_symbol]
+    if haskey(config,:init_silence)
+        sequence = fill(silence, 3, seq_length+1)
+        sequence[1, 1] = silence
+        sequence[2, 1] = silence
+        sequence[3, 1] = config.init_silence
+        for (n, (w, p)) in enumerate(zip(words, phonemes))
+            sequence[1, 1+n] = string2id[w]
+            sequence[2, 1+n] = string2id[p]
+            sequence[3, 1+n] = ph_duration[p]
+        end
+    else
+        sequence = fill(silence, 3, seq_length)
+        for (n, (w, p)) in enumerate(zip(words, phonemes))
+            sequence[1, n] = string2id[w]
+            sequence[2, n] = string2id[p]
+            sequence[3, n] = ph_duration[p]
+        end
+    end
+
+    line_id = (phonemes=2, words=1, duration=3)
+    sequence = (;lexicon...,
+                sequence=sequence,
+                line_id = line_id)
+
+end
+
+function generate_sequence_variable(config; seed = nothing )
     if seed !== nothing
         Random.seed!(seed)
     end 
@@ -227,4 +310,4 @@ end
 #     return new_seq
 # end
 
-export generate_sequence, get_words, sign_intervals, time_in_interval, sequence_end
+export generate_sequence_variable, generate_sequence, get_words, sign_intervals, time_in_interval, sequence_end
