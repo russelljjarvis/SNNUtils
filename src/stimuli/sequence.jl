@@ -1,8 +1,7 @@
 using StatsBase
 
 function generate_lexicon(config)
-    @unpack seq_length, ph_duration, dictionary = config
-
+    @unpack ph_duration, dictionary = config
 
     all_words = collect(keys(dictionary)) |> Set |> collect |> sort |> Vector{Symbol}
     # sort(collect(Set(filter(x -> x !== silence_symbol, words)))) |> Vector{Symbol}
@@ -83,70 +82,46 @@ function generate_sequence(lexicon, config, seed=nothing)
 
 end
 
-function generate_sequence_variable(config; seed = nothing )
+function generate_sequence(lexicon, config, seed=nothing)
+
     if seed !== nothing
         Random.seed!(seed)
     end 
 
-    @unpack seq_length, ph_duration, ph_space_duration, dictionary = config
-
+    @unpack seq_length = config
+    @unpack dict, id2string, string2id, symbols, silence_symbol, ph_duration, ph_space_duration = lexicon
     silent_intervals = 1
-    null_symbol = :_
     words, phonemes = get_words(
         seq_length,
-        dictionary,
-        null_symbol,
+        dict,
+        silence_symbol,
         silent_intervals = silent_intervals,
     )
 
-    all_words = sort(collect(Set(filter(x -> x !== null_symbol, words)))) |> Vector{Symbol}
-    all_phonemes = sort(collect(Set(filter(x -> x !== null_symbol, phonemes)))) |> Vector{Symbol}
-
-    symbols = collect(union(all_words, all_phonemes))
-
-    ## create mapping between numbers and phonemes
-    mapping = Dict()
-    r_mapping = Dict()
-    for (n, s) in enumerate(all_words)
-        push!(mapping, n => s)
-        push!(r_mapping, s => n)
-    end
-    for (n, s) in enumerate(all_phonemes)
-        n = n + length(all_words)
-        push!(mapping, n => s)
-        push!(r_mapping, s => n)
-    end
-
-    ## Add the null symbol
-    null = length(symbols) + 1
-    push!(mapping, null => :_)
-    push!(r_mapping, :_ => null)
-
     ## create the populations
     ## sequence from the initial word sequence
-    ph_duration_values = []
+    silence = string2id[silence_symbol]
     if haskey(config,:init_silence)
-        sequence = fill(null, 3, seq_length+1)
-        sequence[1, 1] = null
-        sequence[2, 1] = null
+        sequence = fill(silence, 3, seq_length+1)
+        sequence[1, 1] = silence
+        sequence[2, 1] = silence
         sequence[3, 1] = config.init_silence
         for (n, (w, p)) in enumerate(zip(words, phonemes))
-            sequence[1, 1+n] = r_mapping[w]
-            sequence[2, 1+n] = r_mapping[p]
+            sequence[1, 1+n] = string2id[w]
+            sequence[2, 1+n] = string2id[p]
             if p in keys(ph_space_duration)
                 min, max = ph_space_duration[p]
                 space_duration = rand(min:max)
                 sequence[3, 1+n] = space_duration
-                push!(ph_duration_values, space_duration)
             else
                 sequence[3, 1+n] = ph_duration[p]
             end
         end
     else
-        sequence = fill(null, 3, seq_length)
+        sequence = fill(silence, 3, seq_length)
         for (n, (w, p)) in enumerate(zip(words, phonemes))
-            sequence[1, n] = r_mapping[w]
-            sequence[2, n] = r_mapping[p]
+            sequence[1, n] = string2id[w]
+            sequence[2, n] = string2id[p]
             if p in keys(ph_space_duration)
                 min, max = ph_space_duration[p]
                 space_duration = rand(min:max)
@@ -157,18 +132,11 @@ function generate_sequence_variable(config; seed = nothing )
         end
     end
 
-
     line_id = (phonemes=2, words=1, duration=3)
+    sequence = (;lexicon...,
+                sequence=sequence,
+                line_id = line_id)
 
-
-    return (sequence=sequence, 
-            id2string = mapping, 
-            string2id = r_mapping, 
-            dict=dictionary, 
-            symbols=(phonemes = all_phonemes, 
-            words = all_words), 
-            null = null,
-            line_id = line_id)
 end
 
 function sign_intervals(sign::Symbol, sequence)
@@ -226,11 +194,20 @@ function time_in_interval(x::Float32, intervals::Vector{Vector{Float32}})
     return false
 end
 
+function start_interval(x::Float32, intervals::Vector{Vector{Float32}})
+    for interval in intervals
+        if x >= interval[1] && x <= interval[2]
+            return interval[1]
+        end
+    end
+    return -1
+end
+
 ## create a random sequence of words with respective phones
 function get_words(
     seq_length::Int,
     dictionary::Dict{Symbol, Vector{Symbol}},
-    null_symbol::Symbol;
+    silence_symbol::Symbol;
     silent_intervals = 1,
     weights = nothing,
 )
@@ -243,13 +220,14 @@ function get_words(
         @assert length(weights) == length(dictionary)
         weights = StatsBase.Weights([weights[k] for k in dict_words])
     end
-
     word_count = Dict{Symbol,Int}()
     words = []
     phonemes = []
     _seq_length = 0
 
     initial_words = copy(dict_words)
+    # @info initial_words, dict_words
+    #@TODO 
     make_equal = true
     while _seq_length < seq_length
         if make_equal
@@ -271,8 +249,8 @@ function get_words(
         if length(phs) + silent_intervals > seq_length - _seq_length
             while _seq_length < seq_length
                 _seq_length += 1
-                push!(words, null_symbol)
-                push!(phonemes, null_symbol)
+                push!(words, silence_symbol)
+                push!(phonemes, silence_symbol)
             end
             continue
         end
@@ -289,25 +267,25 @@ function get_words(
                 _seq_length += 1
             end
         end
-        for _ in 1:silent_intervals
-            push!(words, null_symbol)
-            push!(phonemes, null_symbol)
+        for _ = 1:silent_intervals
+            push!(words, silence_symbol)
+            push!(phonemes, silence_symbol)
             _seq_length += 1
         end
     end
     return words, phonemes
 end
 
-# function null_sequence!(seq::Encoding)
-#     @assert(length(seq.populations) == seq.null)
-#     @assert(seq.populations[seq.null] == [])
-#     fill!(seq.sequence, seq.null)
+# function silence_sequence!(seq::Encoding)
+#     @assert(length(seq.populations) == seq.silence)
+#     @assert(seq.populations[seq.silence] == [])
+#     fill!(seq.sequence, seq.silence)
 # end
 
-# function null_sequence(seq::Encoding)
+# function silence_sequence(seq::Encoding)
 #     new_seq = deepcopy(seq)
-#     null_sequence!(new_seq)
+#     silence_sequence!(new_seq)
 #     return new_seq
 # end
 
-export generate_sequence_variable, generate_sequence, get_words, sign_intervals, time_in_interval, sequence_end
+export generate_sequence, get_words, sign_intervals, time_in_interval, sequence_end, generate_lexicon, start_interval
