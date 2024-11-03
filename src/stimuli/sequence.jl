@@ -43,14 +43,15 @@ function generate_sequence(lexicon, config, seed=nothing)
         Random.seed!(seed)
     end 
 
-    @unpack seq_length = config
+    @unpack seq_length, vot_duration = config
     @unpack dict, id2string, string2id, symbols, silence_symbol, ph_duration = lexicon
     silent_intervals = 1
     words, phonemes = get_words(
         seq_length,
         dict,
         silence_symbol,
-        silent_intervals = silent_intervals,
+        silent_intervals=silent_intervals;
+        vot_duration = vot_duration
     )
 
     ## create the populations
@@ -82,20 +83,21 @@ function generate_sequence(lexicon, config, seed=nothing)
 
 end
 
-function generate_sequence(lexicon, config, seed=nothing)
+function generate_sequence_variable(lexicon, config, seed=nothing)
 
     if seed !== nothing
         Random.seed!(seed)
     end 
 
-    @unpack seq_length = config
-    @unpack dict, id2string, string2id, symbols, silence_symbol, ph_duration, ph_space_duration = lexicon
+    @unpack seq_length, vot_duration = config
+    @unpack dict, id2string, string2id, symbols, silence_symbol, ph_duration = lexicon
     silent_intervals = 1
     words, phonemes = get_words(
         seq_length,
         dict,
         silence_symbol,
-        silent_intervals = silent_intervals,
+        silent_intervals = silent_intervals;
+        vot_duration = vot_duration
     )
 
     ## create the populations
@@ -109,8 +111,8 @@ function generate_sequence(lexicon, config, seed=nothing)
         for (n, (w, p)) in enumerate(zip(words, phonemes))
             sequence[1, 1+n] = string2id[w]
             sequence[2, 1+n] = string2id[p]
-            if p in keys(ph_space_duration)
-                min, max = ph_space_duration[p]
+            if p in keys(vot_duration)
+                min, max = vot_duration[p]
                 space_duration = rand(min:max)
                 sequence[3, 1+n] = space_duration
             else
@@ -122,8 +124,8 @@ function generate_sequence(lexicon, config, seed=nothing)
         for (n, (w, p)) in enumerate(zip(words, phonemes))
             sequence[1, n] = string2id[w]
             sequence[2, n] = string2id[p]
-            if p in keys(ph_space_duration)
-                min, max = ph_space_duration[p]
+            if p in keys(vot_duration)
+                min, max = vot_duration[p]
                 space_duration = rand(min:max)
                 sequence[3, n] = space_duration
             else
@@ -210,6 +212,7 @@ function get_words(
     silence_symbol::Symbol;
     silent_intervals = 1,
     weights = nothing,
+    vot_duration,
 )
 
     dict_words = Vector{Symbol}(collect(keys(dictionary)))
@@ -260,7 +263,7 @@ function get_words(
             _seq_length += 1
 
             # Add the phoneme spacing symbol after each phoneme, except the last
-            if i < length(phs)
+            if i < length(phs) && !isnothing(vot_duration)
                 ph_space_symbol = Symbol("_" * string(word))  # Get the matching symbol for ph
                 push!(phonemes, ph_space_symbol)  # Add space symbol
                 push!(words, word)  # Null for spacing
