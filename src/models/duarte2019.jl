@@ -32,66 +32,15 @@ duarte2019 = (
                         τabs = 2.05ms,
                         τre = 0.25ms,
                         τde = 2.0ms,
-                        gsyn_e = 0.73,
                         τri = 0.5ms, 
                         τdi = 6.0ms,
-                        gsyn_i = 0.265)
+                        gsyn_e = 0.73,
+                        gsyn_i = 0.265
+                        )
 )
 export duarte2019
 
-## Test model
-# spiketime = [1000ms]
-# neurons = [[1]]
-# inputs = SpikeTimeStimulusParameter(neurons=neurons, spiketimes=spiketime)
-
-# IF = SNN.IF(; N = 1, param = duarte2019.PV)
-
-# p1 = SNN.plot()
-# SNN.monitor([IF], [:fire, :v])
-# stim = SpikeTimeStimulus(1, IF, :ge, p=1.f0, param=inputs)
-# sim!([IF],[SNN.EmptySynapse()], [stim], duration=1200ms, dt=0.1ms)
-# p1 = SNN.vecplot!(p1, IF, :v, r=800:0.001:1200ms, neurons=[1], dt=0.1ms,    label= IF.param.gsyn_e)
-
-# SNN.monitor([IF], [:fire, :v])
-# stim = SpikeTimeStimulus(1, IF, :gi, p=1.f0, param=inputs)
-# sim!([IF],[SNN.EmptySynapse()], [stim], duration=1200ms, dt=0.1ms)
-# p1 = SNN.vecplot!(p1, IF, :v, r=800:0.001:1200ms, neurons=[1], dt=0.1ms, label= IF.param.gsyn_i)
-# SNN.plot!(p1, ylims=:auto)
-
-# #
-# IF = SNN.IF(; N = 1, param = duarte2019.SST)
-
-# p2 = SNN.plot()
-# SNN.monitor([IF], [:fire, :v])
-# stim = SpikeTimeStimulus(1, IF, :ge, p=1.f0, param=inputs)
-# sim!([IF],[SNN.EmptySynapse()], [stim], duration=1200ms, dt=0.1ms)
-# p2 = SNN.vecplot!(p2, IF, :v, r=800:0.001:1200ms, neurons=[1], dt=0.1ms, label= IF.param.gsyn_e)
-
-# SNN.monitor([IF], [:fire, :v])
-# stim = SpikeTimeStimulus(1, IF, :gi, p=1.f0, param=inputs)
-# sim!([IF],[SNN.EmptySynapse()], [stim], duration=1200ms, dt=0.1ms)
-# p2 = SNN.vecplot!(p2, IF, :v, r=800:0.001:1200ms, neurons=[1], dt=0.1ms, label= IF.param.gsyn_i)
-# SNN.plot!(p2, ylims=:auto)
-
-# #
-# IF = SNN.AdEx(; N = 1, param = duarte2019.AdEx)
-
-# p3 = SNN.plot()
-# SNN.monitor([IF], [:fire, :v])
-# stim = SpikeTimeStimulus(1, IF, :ge, p=1.f0, param=inputs, μ=20)
-# stim2 = CurrentStimulus(IF, I_base=700pA)
-# sim!([IF],[SNN.EmptySynapse()], [stim,stim2], duration=1200ms, dt=0.1ms)
-# p3 = SNN.vecplot!(p3, IF, :v, r=800:0.001:1200ms, neurons=[1], dt=0.1ms, label= IF.param.gsyn_e)
-
-# SNN.monitor([IF], [:fire, :v])
-# stim = SpikeTimeStimulus(1, IF, :gi, p=1.f0, param=inputs, μ=20)
-# sim!([IF],[SNN.EmptySynapse()], [stim,stim2], duration=1200ms, dt=0.1ms)
-# p3 = SNN.vecplot!(p3, IF, :v, r=800:0.001:1200ms, neurons=[1], dt=0.1ms, label= IF.param.gsyn_i)
-# SNN.plot!(p3, ylims=:auto)
-
-# #
-# SNN.plot(p1,p2, p3, legend=true)
-# ##
+##
 
 # Duarte2019 model parameters with NMDA and GABA_B synapses
 # const DuarteSynapsePV = let
