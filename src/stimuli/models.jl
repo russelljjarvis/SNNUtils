@@ -18,7 +18,8 @@ Generate a sequence input for a spiking neural network.
 # Sequence input
 function step_input_sequence(;network, targets=[:d], lexicon, config_sequence, seed=1234, p_post, peak_rate=4kHz, start_rate=1kHz, decay_rate=10ms)
     @unpack E = network.pop
-    seq = generate_sequence(lexicon, config_sequence, seed)
+    # Sequence input
+    seq = generate_sequence(lexicon, word_phonemes_sequence; config_sequence...)
 
     function step_input(x, param::PSParam) 
         intervals::Vector{Vector{Float32}} = param.variables[:intervals]
