@@ -37,19 +37,20 @@ quaresima2023 = (
         IsIf = (p = 0.2, μ = log(1.4),  dist = LogNormal, σ = 0.25),
         IfIf = (p = 0.2, μ = log(16.2), dist = LogNormal, σ = 0.14),
 
-        EdIs = (p = 0.2, μ = log(10.8), dist = LogNormal, σ = 0),
+        EdIs = (p = 0.2, μ = log(100.0), dist = LogNormal, σ = 0),
         IfIs = (p = 0.2, μ = log(0.83), dist = LogNormal, σ = 0.),
         IsIs = (p = 0.2, μ = log(0.83), dist = LogNormal, σ = 0.),
     )
 )
 
 function ballstick_network(;
+            NE::Int,
             I1_params, 
             I2_params, 
             E_params, 
             connectivity,
             plasticity,
-            NE=1000)
+            )
     # Number of neurons in the network
     NI = NE ÷ 4
     NI1 = round(Int,NI * 0.35)
@@ -74,15 +75,15 @@ function ballstick_network(;
     norm = SNN.SynapseNormalization(NE, [E_to_E], param = SNN.MultiplicativeNorm(τ = 20ms))
     # background noise
     stimuli = Dict(
-        :noise_s   => SNN.PoissonStimulus(E,  :he_s,  param=4.0kHz, cells=:ALL, μ=5.f0, name="noise_s"),
+        :noise_s   => SNN.PoissonStimulus(E,  :he_s,  param=4.0kHz, cells=:ALL, μ=5.f0, name="noise_s",),
         :noise_i1  => SNN.PoissonStimulus(I1, :ge,   param=1.8kHz, cells=:ALL, μ=1.f0,  name="noise_i1"),
-        :noise_i2  => SNN.PoissonStimulus(I2, :ge,   param=2.5kHz, cells=:ALL, μ=1.5f0, name="noise_i2")
+        :noise_i2  => SNN.PoissonStimulus(I2, :ge,   param=2.0kHz, cells=:ALL, μ=1.8f0, name="noise_i2")
     )
     # Store neurons and synapses into a dictionary
     pop = dict2ntuple(@strdict E I1 I2)
     syn = dict2ntuple(@strdict E_to_I1 E_to_I2 I1_to_E I2_to_E I1_to_I1 I2_to_I2 I1_to_I2 I2_to_I1 E_to_E norm)
     # Return the network as a model
-    merge_models(pop, syn, stimuli)
+    merge_models(pop, syn, stimuli, silent=true)
 end
 
 
