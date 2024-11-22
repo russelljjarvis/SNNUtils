@@ -15,7 +15,7 @@
 quaresima2023 = (
     plasticity = (
         iSTDP_rate = SNN.iSTDPParameterRate(η = 0.2, τy = 5ms, r=10Hz, Wmax = 273.4pF, Wmin = 0.1pF), 
-        iSTDP_potential =SNN.iSTDPParameterPotential(η = 0.2, v0 = -50mV, τy = 20ms, Wmax = 273.4pF, Wmin = 0.1pF),        
+        iSTDP_potential =SNN.iSTDPParameterPotential(η = 0.2, v0 = -70mV, τy = 20ms, Wmax = 273.4pF, Wmin = 0.1pF),        
         vstdp = SNN.vSTDPParameter(
                 A_LTD = 4.0f-5,  #ltd strength          # made 10 times slower
                 A_LTP = 14.0f-5, #ltp strength
