@@ -30,11 +30,11 @@ quaresima2023 = (
     ),
     connectivity = (
         EdE = (p = 0.2,  μ = 10., dist = Normal, σ = 1),
-        IfE = (p = 0.2,  μ = log(2.),  dist = LogNormal, σ = 0.),
-        IsE = (p = 0.2,  μ = log(2.),  dist = LogNormal, σ = 0.),
+        IfE = (p = 0.2,  μ = log(2.0),  dist = LogNormal, σ = 0.),
+        IsE = (p = 0.2,  μ = log(2.5),  dist = LogNormal, σ = 0.),
 
         EIf = (p = 0.2,  μ = log(10.8), dist = LogNormal, σ = 0),
-        IsIf = (p = 0.2, μ = log(5.4),  dist = LogNormal, σ = 0.25),
+        IsIf = (p = 0.2, μ = log(2.4),  dist = LogNormal, σ = 0.25),
         IfIf = (p = 0.2, μ = log(15.2), dist = LogNormal, σ = 0.14),
 
         EdIs = (p = 0.2, μ = log(10.0), dist = LogNormal, σ = 0),
