@@ -44,7 +44,7 @@ function step_input_sequence(;network, targets=[:d], lexicon,
         param = PSParam(rate=step_input, 
                     variables=variables)
         for t in targets
-            push!(stim,s  => SNN.PoissonStimulus(E, :he, t, μ=4.f0, param=param, name="w_$s", p_post=p_post))
+            push!(stim, Symbol(string(s,"_",t))  => SNN.PoissonStimulus(E, :he, t, μ=4.f0, param=param, name="w_$s", p_post=p_post))
         end
     end
     for s in seq.symbols.phonemes
@@ -52,7 +52,7 @@ function step_input_sequence(;network, targets=[:d], lexicon,
         param = PSParam(rate=step_input, 
                     variables=variables)
         for t in targets
-            push!(stim,s  => SNN.PoissonStimulus(E, :he, t, μ=4.f0, param=param, name="$s", p_post=p_post) 
+            push!(stim,Symbol(string(s,"_",t))  => SNN.PoissonStimulus(E, :he, t, μ=4.f0, param=param, name="$s", p_post=p_post) 
             )
         end
     end
