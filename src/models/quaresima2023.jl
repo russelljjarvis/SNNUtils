@@ -1,17 +1,3 @@
-# dend_stdp = STDP(
-#     a⁻ = 4.0f-5,  #ltd strength          # made 10 times slower
-#     a⁺ = 14.0f-5, #ltp strength
-#     θ⁻ = -40.0,  #ltd voltage threshold # set higher
-#     θ⁺ = -20.0,  #ltp voltage threshold
-#     τu = 15.0,  #timescale for u variable
-#     τv = 45.0,  #timescale for v variable
-#     τx = 20.0,  #timescale for x variable
-#     τ1 = 5,    # filter for delayed voltage
-#     j⁻ = 1.78,  #minimum ee strength
-#     j⁺ = 41.4,   #maximum ee strength
-# )
-
-
 quaresima2023 = (
     plasticity = (
         iSTDP_rate = SNN.iSTDPParameterRate(η = 0.2, τy = 5ms, r=10Hz, Wmax = 273.4pF, Wmin = 0.1pF), 
