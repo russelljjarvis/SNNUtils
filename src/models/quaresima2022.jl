@@ -18,8 +18,8 @@ Guy Eyal, Matthijs B. Verhoog, Guilherme Testa-Silva, Yair Deitcher, Ruth Benavi
 """
 
 EyalGluDend = Glutamatergic(
-    Receptor(E_rev = 0.0, τr = 0.25, τd = 2.0, g0 = 0.73),
-    ReceptorVoltage(E_rev = 0.0, τr = 8, τd = 35.0, g0 = 1.31, nmda = 1.0f0),
+    Receptor(E_rev = 0.0, τr = 0.26, τd = 2.0, g0 = 0.73), # CHANGED τr = 0.25
+    ReceptorVoltage(E_rev = 0.0, τr = 8, τd = 35.0, g0 = 1.31, nmda = 0.075), # g0 = 1.31 ?, nmda = 1.0f0?
 )
 
 EyalGluDend_nonmda = Glutamatergic(
@@ -32,8 +32,8 @@ EyalGluDend_nonmda = Glutamatergic(
 Richard Miles, Katalin Tóth, Attila I Gulyás, Norbert Hájos, and Tamas F Freund.  Differences between Somatic923and Dendritic Inhibition in the Hippocampus.Neuron, 16(4):815–823, April 1996. ISSN 0896-6273. doi: 10.1016/924S0896-6273(00)80101-4.
 """
 MilesGabaDend = GABAergic(
-    Receptor(E_rev = -75.0, τr = 4.8, τd = 29.0, g0 = 0.126),
-    Receptor(E_rev = -90.0, τr = 30, τd = 100.0, g0 = 0.006),
+    Receptor(E_rev = -70.0, τr = 4.8, τd = 29.0, g0 = 0.27), # CHANGED E_rev = -75.0, g0 = 0.126
+    Receptor(E_rev = -90.0, τr = 30, τd = 400.0, g0 = 0.006), # CHANGED τd = 100.0
 )
 
 MilesGabaSoma =
@@ -42,6 +42,7 @@ MilesGabaSoma =
 DuarteGluSoma = Glutamatergic(
     Receptor(E_rev = 0.0, τr = 0.25, τd = 2.0, g0 = 0.73),
     ReceptorVoltage(τr=-1),
+
 )
 
 # EyalNMDA = NMDAVoltageDependency(mg = Mg_mM, b = nmda_b, k = nmda_k)

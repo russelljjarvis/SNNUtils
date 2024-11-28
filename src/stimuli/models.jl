@@ -23,6 +23,7 @@ function step_input_sequence(;network, targets=[:d], lexicon,
     @unpack E = network.pop
     seq = generate_sequence(lexicon, word_phonemes_sequence; config_sequence..., kwargs...)
 
+
     function step_input(x, param::PSParam) 
         intervals::Vector{Vector{Float32}} = param.variables[:intervals]
         decay::Float32 = param.variables[:decay]
