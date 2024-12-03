@@ -101,6 +101,7 @@ function generate_sequence(lexicon, seq_function::Function, seed=nothing; init_s
 
 end
 
+
 """
     sign_intervals(sign::Symbol, sequence)
 
@@ -211,4 +212,74 @@ function start_interval(x::Float32, intervals::Vector{Vector{Float32}})
     return -1
 end
 
-export generate_sequence, sign_intervals, time_in_interval, sequence_end, generate_lexicon, start_interval
+"""
+    getdictionary(words::Vector{Union{String, Symbol}})
+
+Create a dictionary mapping each word in `words` to a vector of symbols representing its letters.
+
+# Arguments
+- `words`: A vector of strings or symbols representing the words.
+
+# Returns
+A dictionary mapping each word to a vector of symbols representing its letters.
+"""
+function getdictionary(words::Vector{T }) where T <: Union{String, Symbol}
+    Dict(Symbol(word) => [Symbol(letter) for letter in string(word)] for word in words)
+end
+
+"""
+    getphonemes(dictionary::Dict{Symbol, Vector{Symbol}})
+
+Get a vector of symbols representing all the unique phonemes in the given `dictionary`.
+
+# Arguments
+- `dictionary`: A dictionary mapping words to vectors of symbols representing their letters.
+
+# Returns
+A vector of symbols representing all the unique phonemes in the given `dictionary`.
+"""
+function getphonemes(dictionary::Dict{Symbol, Vector{Symbol}})
+    phs = collect(unique(vcat(values(dictionary)...)))
+    push!(phs, :_)
+    return phs
+end
+
+"""
+    getduration(dictionary::Dict{Symbol, Vector{Symbol}}, duration::R) where R <: Real
+
+Create a dictionary mapping each phoneme in the given `dictionary` to the specified `duration`.
+
+# Arguments
+- `dictionary`: A dictionary mapping words to vectors of symbols representing their letters.
+- `duration`: The duration to assign to each phoneme.
+
+# Returns
+A dictionary mapping each phoneme to the specified `duration`.
+"""
+function getduration(dictionary::Dict{Symbol, Vector{Symbol}}, duration::R) where R <: Real
+    phonemes = getphonemes(dictionary)
+    Dict(Symbol(phoneme) => Float32(duration) for phoneme in phonemes)
+end
+
+"""
+    symbolnames(seq)
+
+    Get the names of phonemes and words from the given sequence.
+    Words are prefixed with 'w_'.
+
+"""
+function symbolnames(seq)
+    phonemes = String[]
+    words = String[]
+    [push!(phonemes, string.(ph)) for ph in seq.symbols.phonemes]
+    [push!(words, "w_"*string(w)) for w in seq.symbols.words]
+    return (phonemes=phonemes, words=words)
+end
+
+function getcells(stim, symbol, target)
+    target = target =="" ? "" : "_$target"
+   return collect(Set(getfield(stim,Symbol(string(symbol, target ))).cells))
+end
+
+
+export generate_sequence, sign_intervals, time_in_interval, sequence_end, generate_lexicon, start_interval, getdictionary, getduration, getphonemes, symbolnames, getcells

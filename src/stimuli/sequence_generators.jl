@@ -22,7 +22,7 @@ function word_phonemes_sequence(
     weights = nothing,
     seed = nothing,
     silent_intervals = 1,
-    seq_length::Int,
+    repetition::Int,
     kwargs...
 )
 
@@ -42,6 +42,7 @@ function word_phonemes_sequence(
     remaining_words = copy(dict_words)
     make_equal = true
 
+    seq_length = round(Int, length(dict_words)*repetition* mean([length(dict[word]) for word in dict_words]))
     while length(words) < seq_length
         current_word = choose_word(make_equal, remaining_words, dict_words, weights, word_frequency)
         word_phonemes = dict[current_word]
@@ -82,6 +83,7 @@ function vot_sequence(
     remaining_words = copy(dict_words)
     make_equal = true
 
+    sequence_length = round(Int, dict_words*repetition* mean([length(dictionary[word]) for word in dict_words])), 
     while length(words) < sequence_length
         current_word = choose_word(make_equal, remaining_words, dict_words, weights, word_frequency)
         word_phonemes = dictionary[current_word]
@@ -285,5 +287,112 @@ end
 #     silence_sequence!(new_seq)
 #     return new_seq
 # end
+"""
+    step_input_sequence(; network, targets=[:d], lexicon, config_sequence, seed=1234)
+
+Generate a sequence input for a spiking neural network.
+
+# Arguments
+- `network`: The spiking neural network object.
+- `targets`: An array of target neurons to stimulate. Default is `[:d]`.
+- `lexicon`: The lexicon object containing the sequence symbols.
+- `config_sequence`: The configuration for generating the sequence.
+
+# Returns
+- `stim`: A named tuple of stimuli for each symbol in the sequence.
+- `seq`: The generated sequence.
+
+"""
+function step_input_sequence(;network, targets=[:d], words = true, 
+    lexicon, 
+    p_post, 
+    peak_rate=4kHz, start_rate=2kHz, decay_rate=10ms,
+    kwargs...)
+
+    @unpack E = network.pop
+    seq = generate_sequence(lexicon, word_phonemes_sequence; kwargs...)
+
+
+    stim = Dict{Symbol,Any}()
+    parameters = Dict(:decay=>decay_rate, :peak=>peak_rate, :start=>start_rate)
+
+    for s in seq.symbols.words
+        variables = merge(parameters, Dict(:intervals=>sign_intervals(s, seq)))
+        param = PSParam(rate=attack_decay, 
+                    variables=variables)
+        for t in targets
+            push!(stim, Symbol(string(s,"_",t))  => SNN.PoissonStimulus(E, :he, t, μ=4.f0, param=param, name="w_$s", p_post=p_post))
+            if !words
+                getfield(stim, Symbol(string(s,"_",t)) ).param.active[1] = false
+            end
+        end
+    end
+    for s in seq.symbols.phonemes
+        variables = merge(parameters, Dict(:intervals=>sign_intervals(s, seq)))
+        param = PSParam(rate=attack_decay, 
+                    variables=variables)
+        for t in targets
+            push!(stim,Symbol(string(s,"_",t))  => SNN.PoissonStimulus(E, :he, t, μ=4.f0, param=param, name="$s", p_post=p_post) 
+            )
+        end
+    end
+    stim = dict2ntuple(stim)
+    stim, seq
+end
+
+function randomize_sequence!(;seq, model, target::Symbol, words=true, kwargs...)
+    new_seq = generate_sequence(seq, word_phonemes_sequence; kwargs...)
+    @unpack stim = model
+    for s in seq.symbols.words
+        getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, new_seq)
+        if !words 
+            getfield(stim, Symbol(string(s,"_",target)) ).param.active[1] = false
+        end
+    end
+    for s in seq.symbols.phonemes
+        getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, new_seq)
+    end
+    return new_seq
+end
+
+
+function dummy_input(x, param::PSParam)
+    return 0kHz
+end
+
+
+"""
+    attack_decay(x, param::PSParam)
+
+    Generate an attack-decay function for the PoissonStimulus. 
+    It requires these parameters in the PoissonStimulusParameter object:
+    - `intervals`: The intervals for the attack-decay function.
+    - `decay`: The decay rate for the function.
+    - `peak`: The peak rate for the function.
+    - `start`: The start rate for the function.
+    
+    The attack decay function is defined as:
+
+    f(x) = peak + (start-peak) *(exp(-(x-my_interval)/decay))
+
+"""
+function attack_decay(x, param::PSParam) 
+    intervals::Vector{Vector{Float32}} = param.variables[:intervals]
+    decay::Float32 = param.variables[:decay]
+    peak::Float32 = param.variables[:peak]
+    start::Float32 = param.variables[:start]
+    if time_in_interval(x, intervals)
+        my_interval::Float32 = start_interval(x, intervals)
+        return peak + (start-peak)*(exp(-(x-my_interval)/decay)) 
+        # return 0kHz
+    else
+        return 0kHz
+    end
+end
+# scatter(new_seq.sequence[1,:], seq.sequence[1,:], label="New sequence", c=:black, alpha=0.01, ms=10)
+
+
+export step_input_sequence, randomize_sequence!, dummy_input, attack_decay
+"""
 
 export word_phonemes_sequence, vot_sequence
