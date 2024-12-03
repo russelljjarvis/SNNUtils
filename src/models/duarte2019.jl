@@ -12,7 +12,6 @@ duarte2019 = (
         τdi = 2.50ms,
         gsyn_e = 1.04nS, # ADDED 
         gsyn_i = 0.84nS, # ADDED 
-
     ),
     SST = SNN.IFParameterGsyn(
         τm = 102.86pF / 4.61nS,

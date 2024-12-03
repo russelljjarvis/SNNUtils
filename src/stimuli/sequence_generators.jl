@@ -303,10 +303,14 @@ Generate a sequence input for a spiking neural network.
 - `seq`: The generated sequence.
 
 """
-function step_input_sequence(;network, targets=[:d], words = true, 
+function step_input_sequence(;network, 
+    targets, 
+    words, 
     lexicon, 
     p_post, 
-    peak_rate=4kHz, start_rate=2kHz, decay_rate=10ms,
+    peak_rate, 
+    start_rate, 
+    decay_rate,
     kwargs...)
 
     @unpack E = network.pop
@@ -393,6 +397,3 @@ end
 
 
 export step_input_sequence, randomize_sequence!, dummy_input, attack_decay
-"""
-
-export word_phonemes_sequence, vot_sequence
