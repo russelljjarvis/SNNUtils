@@ -345,17 +345,19 @@ function step_input_sequence(;network,
     stim, seq
 end
 
-function randomize_sequence!(;seq, model, target::Symbol, words=true, kwargs...)
+function randomize_sequence!(;seq, model, targets::Vector{Symbol}, words=true, kwargs...)
     new_seq = generate_sequence(seq, word_phonemes_sequence; kwargs...)
     @unpack stim = model
-    for s in seq.symbols.words
-        getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, new_seq)
-        if !words 
-            getfield(stim, Symbol(string(s,"_",target)) ).param.active[1] = false
+    for target in targets
+        for s in seq.symbols.words
+            getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, new_seq)
+            if !words 
+                getfield(stim, Symbol(string(s,"_",target)) ).param.active[1] = false
+            end
         end
-    end
-    for s in seq.symbols.phonemes
-        getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, new_seq)
+        for s in seq.symbols.phonemes
+            getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, new_seq)
+        end
     end
     return new_seq
 end
