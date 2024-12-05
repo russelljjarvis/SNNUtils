@@ -19,7 +19,7 @@ using CategoricalArrays
 
 
 """
-function SVCtrain(Xs, ys; name, seed=123, p=0.6)
+function SVCtrain(Xs, ys; seed=123, p=0.6)
     X = Xs .+ 1e-1
     y = string.(ys)
     y = CategoricalVector(string.(ys))
@@ -42,7 +42,7 @@ function SVCtrain(Xs, ys; name, seed=123, p=0.6)
     ŷ = MLJ.predict(mach, Xtest');
     # ŷ, classes = svmpredict(classifier, Xtest);
     
-    @info "Accuracy: $(mean(ŷ .== ytest) * 100)"
+    # @info "Accuracy: $(mean(ŷ .== ytest) * 100)"
     return mean(ŷ .== ytest)
 end
 
@@ -64,7 +64,7 @@ function spikecount_features(pop::T, offsets::Vector)  where T <: SNN.AbstractPo
     X = zeros(N, length(offsets))
     Threads.@threads for i in eachindex(offsets)
         offset = offsets[i]
-        X[:,i] = length.(spiketimes(pop.E, interval = offset))
+        X[:,i] = length.(spiketimes(pop, interval = offset))
     end
     return X
 end
@@ -87,7 +87,7 @@ end
 function sym_features(sym::Symbol, pop::T, offsets::Vector) where T <: SNN.AbstractPopulation
     N = pop.N
     X = zeros(N, length(offsets))
-    var, r_v = SNN.interpolated_record(model.pop.E, sym)
+    var, r_v = SNN.interpolated_record(pop, sym)
     Threads.@threads for i in eachindex(offsets)
         offset = offsets[i]
         offset[end] > r_v[end] && continue
@@ -96,3 +96,5 @@ function sym_features(sym::Symbol, pop::T, offsets::Vector) where T <: SNN.Abstr
     end
     return X
 end
+
+export SVCtrain, spikecount_features, sym_features
