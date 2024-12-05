@@ -59,6 +59,8 @@ function word_phonemes_sequence(
             append_word_and_phonemes!(words, phonemes, current_word, word_phonemes, silence_symbol, silent_intervals)
         end
     end
+    @assert length(words) == seq_length
+    @assert length(phonemes) == seq_length
 
     return words, phonemes, seq_length
 end
