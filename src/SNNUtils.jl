@@ -8,7 +8,6 @@ using Random
 using Distributions
 using Printf
 using JLD
-using HDF5
 using Serialization
 using Dates
 using BSON
@@ -20,6 +19,7 @@ include("analysis/base.jl")
 include("stimuli/base.jl")
 include("models/models.jl")
 include("analysis/performance.jl")
+include("analysis/classifiers.jl")
 
 
 end # module

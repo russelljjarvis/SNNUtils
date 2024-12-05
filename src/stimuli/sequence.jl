@@ -151,6 +151,24 @@ function sign_intervals(sign::Symbol, sequence)
     return intervals
 end
 
+
+function all_intervals(sym::Symbol, sequence; interval::Vector=[-50ms, 100ms] )
+    offsets = Vector{Vector{Float32}}()
+    ys = Vector{Symbol}()
+    symbols = getfield(sequence.symbols, sym)
+    @show symbols
+    for word in symbols
+        for myinterval in sign_intervals(word, sequence)
+            offset = myinterval[end] .+ interval
+            push!(offsets, offset)
+            push!(ys, word)
+        end
+    end
+    return offsets, ys
+end
+
+
+
 """
     sequence_end(seq)
 
@@ -282,4 +300,4 @@ function getcells(stim, symbol, target)
 end
 
 
-export generate_sequence, sign_intervals, time_in_interval, sequence_end, generate_lexicon, start_interval, getdictionary, getduration, getphonemes, symbolnames, getcells
+export generate_sequence, sign_intervals, time_in_interval, sequence_end, generate_lexicon, start_interval, getdictionary, getduration, getphonemes, symbolnames, getcells, all_intervals
