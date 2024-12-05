@@ -97,4 +97,45 @@ function sym_features(sym::Symbol, pop::T, offsets::Vector) where T <: SNN.Abstr
     return X
 end
 
-export SVCtrain, spikecount_features, sym_features
+"""
+    score_activity(model, seq, interval=[0ms, 100ms])
+
+Compute the most active population in a given interval with respect to the offset time of the input presented, then compute the confusion matrix.
+
+The function computes the activity of the spiking neural network model for each symbol in the sequence and get the symbol with maximum activity. It then updates the confusion matrix accordingly.
+
+The function computes the activity of the spiking neural network model for each symbol in the sequence and get the symbol with maximum activity. It then updates the confusion matrix accordingly.
+
+## Arguments
+- `model`: The spiking neural network model, containg the target.
+- `seq`: The sequence of symbols to be recognized.
+- `interval`: The time interval during which the activity is measured. Default is `[0ms, 100ms]`.
+- `pop`: The population whose spike will be computed. Default is `:E`.
+
+## Returns
+- `confusion_matrix`: The confusion matrix, normalized by the number of occurrences of each symbol in the sequence. The matrix has (predicted x true) dimensions.
+"""
+function score_activity(model, seq, interval=[0ms, 100ms]; pop=:E)
+    offsets, ys = all_intervals(:words, seq, interval=interval)
+    S = spikecount_features(getfield(model.pop,pop), offsets)
+    confusion_matrix= zeros(length(seq.symbols.words), length(seq.symbols.words))
+    activity = zeros(length(seq.symbols.words))
+    occurences = zeros(length(seq.symbols.words))
+    for y in eachindex(ys)
+        word = ys[y]
+        word_id = findfirst(==(word), seq.symbols.words)
+        occurences[word_id] += 1
+        for w in eachindex(seq.symbols.words)
+            word_test = seq.symbols.words[w]
+            cells = getstim(stim, word_test, :d).cells
+            activity[w] = mean(S[cells, y])
+        end
+        activated = argmax(activity)
+        confusion_matrix[activated, word_id] += 1
+    end
+    return confusion_matrix./occurences'
+end
+
+
+
+export SVCtrain, spikecount_features, sym_features, score_activity

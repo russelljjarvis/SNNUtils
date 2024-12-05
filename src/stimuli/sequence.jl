@@ -299,5 +299,14 @@ function getcells(stim, symbol, target)
    return collect(Set(getfield(stim,Symbol(string(symbol, target ))).cells))
 end
 
+function getstim(stim, word, target)
+    return getfield(stim, getstimsym(word, target))
+end
+
+function getstimsym(word, target)
+    return Symbol(string(word)*"_$target")
+end
+
+export getstim, getstimsym
 
 export generate_sequence, sign_intervals, time_in_interval, sequence_end, generate_lexicon, start_interval, getdictionary, getduration, getphonemes, symbolnames, getcells, all_intervals
