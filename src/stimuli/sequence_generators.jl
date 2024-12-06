@@ -27,7 +27,7 @@ function word_phonemes_sequence(
 )
 
 
-    @unpack dict, symbols, silence_symbol, ph_duration = lexicon
+    @unpack dict, symbols, silence, ph_duration = lexicon
     if seed !== nothing
         Random.seed!(seed)
     end 
@@ -54,9 +54,9 @@ function word_phonemes_sequence(
         end
 
         if should_fill_with_silence(word_phonemes, silent_intervals, seq_length, length(words))
-            fill_with_silence!(words, phonemes, silence_symbol, seq_length - length(words))
+            fill_with_silence!(words, phonemes, silence, seq_length - length(words))
         else
-            append_word_and_phonemes!(words, phonemes, current_word, word_phonemes, silence_symbol, silent_intervals)
+            append_word_and_phonemes!(words, phonemes, current_word, word_phonemes, silence, silent_intervals)
         end
     end
     @assert length(words) == seq_length
@@ -131,66 +131,6 @@ function vot_sequence(
 
     return words, phonemes
 end
-
-
-# What is this function doing?
-# function generate_sequence_variable(lexicon, config, seed=nothing)
-
-#     if seed !== nothing
-#         Random.seed!(seed)
-#     end 
-
-#     @unpack seq_length, vot_duration = config
-#     @unpack dict, id2string, string2id, symbols, silence_symbol, ph_duration = lexicon
-#     silent_intervals = 1
-#     words, phonemes = get_words(
-#         seq_length,
-#         dict,
-#         silence_symbol,
-#         silent_intervals = silent_intervals;
-#         vot_duration = vot_duration
-#     )
-
-#     ## create the populations
-#     ## sequence from the initial word sequence
-#     silence = string2id[silence_symbol]
-#     if haskey(config,:init_silence)
-#         sequence = fill(silence, 3, seq_length+1)
-#         sequence[1, 1] = silence
-#         sequence[2, 1] = silence
-#         sequence[3, 1] = config.init_silence
-#         for (n, (w, p)) in enumerate(zip(words, phonemes))
-#             sequence[1, 1+n] = string2id[w]
-#             sequence[2, 1+n] = string2id[p]
-#             if p in keys(vot_duration)
-#                 min, max = vot_duration[p]
-#                 space_duration = rand(min:max)
-#                 sequence[3, 1+n] = space_duration
-#             else
-#                 sequence[3, 1+n] = ph_duration[p]
-#             end
-#         end
-#     else
-#         sequence = fill(silence, 3, seq_length)
-#         for (n, (w, p)) in enumerate(zip(words, phonemes))
-#             sequence[1, n] = string2id[w]
-#             sequence[2, n] = string2id[p]
-#             if p in keys(vot_duration)
-#                 min, max = vot_duration[p]
-#                 space_duration = rand(min:max)
-#                 sequence[3, n] = space_duration
-#             else
-#                 sequence[3, n] = ph_duration[p]
-#             end
-#         end
-#     end
-
-#     line_id = (phonemes=2, words=1, duration=3)
-#     sequence = (;lexicon...,
-#                 sequence=sequence,
-#                 line_id = line_id)
-
-# end
 
 
 """
@@ -347,8 +287,23 @@ function step_input_sequence(;network,
     stim, seq
 end
 
-function randomize_sequence!(;seq, model, targets::Vector{Symbol}, words=true, kwargs...)
-    new_seq = generate_sequence(seq, word_phonemes_sequence; kwargs...)
+function randomize_sequence!(;lexicon, model, targets::Vector{Symbol}, words=true, kwargs...)
+    new_seq = generate_sequence(lexicon, word_phonemes_sequence; kwargs...)
+    @unpack stim = model
+    for target in targets
+        for s in seq.symbols.words
+            getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, new_seq)
+            if !words 
+                getfield(stim, Symbol(string(s,"_",target)) ).param.active[1] = false
+            end
+        end
+        for s in lexicon.symbols.phonemes
+            getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, new_seq)
+        end
+    end
+    return new_seq
+end
+function update_sequence!(;sequence::AbstractVector, model, targets::Vector{Symbol}, words=true, kwargs...)
     @unpack stim = model
     for target in targets
         for s in seq.symbols.words
@@ -363,6 +318,7 @@ function randomize_sequence!(;seq, model, targets::Vector{Symbol}, words=true, k
     end
     return new_seq
 end
+
 
 
 function dummy_input(x, param::PSParam)
