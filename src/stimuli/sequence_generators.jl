@@ -17,8 +17,8 @@ Generate a random word sequence of a given length using a dictionary of words an
 - `words::Vector{Symbol}`: The generated word sequence.
 - `phonemes::Vector{Symbol}`: The corresponding phonemes for each word in the sequence.
 """
-function word_phonemes_sequence(
-    lexicon;
+function word_phonemes_sequence(;
+    lexicon,
     weights = nothing,
     seed = nothing,
     silent_intervals = 1,
@@ -245,20 +245,23 @@ Generate a sequence input for a spiking neural network.
 - `seq`: The generated sequence.
 
 """
-function step_input_sequence(;network, 
-    targets, 
-    words, 
-    lexicon, 
-    p_post, 
-    peak_rate, 
-    start_rate, 
-    proj_strength,
-    decay_rate,
-    kwargs...)
+function step_input_sequence(;
+    generator_function::Function = word_phonemes_sequence, # function to generate the sequence
+    seq=nothing, # optionally provide a sequence    
+    network::NamedTuple, # network object
+    words::Bool,  # active or inactive word inputs
+    ## Projection parameters
+    targets::Vector{Symbol},  # target neuron's compartments
+    p_post::Real,  # probability of post_synaptic projection
+    peak_rate::Real, # peak rate of the stimulus
+    start_rate::Real, # start rate of the stimulus
+    decay_rate::Real, # decay rate of attack-peak function
+    proj_strength::Real, # strength of the synaptic projection
+    kwargs...
+    )
 
     @unpack E = network.pop
-    seq = generate_sequence(lexicon, word_phonemes_sequence; kwargs...)
-
+    seq = isnothing(seq) ? generate_sequence(generator_function; kwargs...) : seq
 
     stim = Dict{Symbol,Any}()
     parameters = Dict(:decay=>decay_rate, :peak=>peak_rate, :start=>start_rate)
@@ -303,20 +306,20 @@ function randomize_sequence!(;lexicon, model, targets::Vector{Symbol}, words=tru
     end
     return new_seq
 end
-function update_sequence!(;sequence::AbstractVector, model, targets::Vector{Symbol}, words=true, kwargs...)
+
+function update_sequence!(;seq, model, targets::Vector{Symbol}, words=true, kwargs...)
     @unpack stim = model
     for target in targets
         for s in seq.symbols.words
-            getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, new_seq)
+            getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, seq)
             if !words 
                 getfield(stim, Symbol(string(s,"_",target)) ).param.active[1] = false
             end
         end
         for s in seq.symbols.phonemes
-            getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, new_seq)
+            getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, seq)
         end
     end
-    return new_seq
 end
 
 
@@ -357,4 +360,4 @@ end
 # scatter(new_seq.sequence[1,:], seq.sequence[1,:], label="New sequence", c=:black, alpha=0.01, ms=10)
 
 
-export step_input_sequence, randomize_sequence!, dummy_input, attack_decay
+export step_input_sequence, randomize_sequence!, dummy_input, attack_decay, update_sequence!, word_phonemes_sequence
