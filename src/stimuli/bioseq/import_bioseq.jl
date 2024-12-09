@@ -1,3 +1,5 @@
+using NPZ
+
 function import_bioseq_tasks(generator_path, task_path)
     task_list = []
     generators_list = []
@@ -34,20 +36,20 @@ function bioseq_epochs(experiment, stage)
     return  epochs
 end
 
-function make_unique_sequence(epochs)
+function make_unique_sequence(epochs, post_silence=1)
     @assert all(length(epoch) == length(epochs[1]) for epoch in epochs )
-    interval_length = maximum(length.(epochs)) +1
+    interval_length = maximum(length.(epochs)) +post_silence
     sequence = Vector{String}()
+    items_in_epoch = Vector{Int}()
     for epoch in epochs
-        epoch_length = length(epoch)
-        add_silence = interval_length - epoch_length
         append!(sequence, epoch)
-        for _ in 1:add_silence
+        for _ in 1:post_silence
             append!(sequence, ["_"])
         end
+        push!(items_in_epoch, length(epoch) + post_silence)
     end
     @assert(all(length(collection) == length(epochs[1]) for collection in epochs))
-    return sequence
+    return Symbol.(sequence), items_in_epoch
 end
 
 
@@ -75,11 +77,11 @@ function seq_bioseq(;experiment, stage::String, kwargs...)
 
     ## Get the stage sequence
     epochs = bioseq_epochs(experiment, stage)
-    sequence_phonemes = make_unique_sequence(epochs)
+    sequence_phonemes, items_in_epochs = make_unique_sequence(epochs)
+    #
     seq_length = length(sequence_phonemes)
-    
     sequence = Matrix{Any}(fill(silence, 3, seq_length))
-    sequence[2, :] = Symbol.(sequence_phonemes)
+    sequence[2, :] = sequence_phonemes
     for (n, p) in enumerate(sequence_phonemes)
         for  w in words
             _w = string(w)
@@ -94,11 +96,95 @@ function seq_bioseq(;experiment, stage::String, kwargs...)
         end
     end
     sequence[3, :] .= ph_duration
+    epoch_timestamps = items_in_epochs .*ph_duration
+
     line_id = (phonemes=2, words=1, duration=3)
     sequence = (;lexicon...,
                 sequence=sequence,
-                line_id = line_id)
+                line_id = line_id,
+                timestamps= epoch_timestamps)
+    
 
 end
 
-export import_bioseq_tasks, seq_bioseq, bioseq_epochs, bioseq_lexicon
+
+function store_experiment_data(exp, network, seq)
+    ## Experiment data
+    label = exp.info["label"]
+    seed  = exp.info["seed_network"]
+    id    = exp.info["seed"] 
+    _root = joinpath(path, "id-$(id)_seed-$(seed)_$(label)") |> mkpath
+    mapping = Dict(string(k)=>string.(v) for (k,v) in seq.dict)
+    exp_data = Dict(
+            "seed"=> seed,
+            "label"=> label,
+            "symbol_duration"=>sequence.ph_duration, 
+    )
+    neurons_ranges = let 
+            exc = network.pop.E.N
+            pv = network.pop.I1.N
+            sst = network.pop.I2.N
+            cumsum([1,exc, sst, pv]) |> x-> [collect(x[n]:(x[n+1]-1)) for n in 1:length(x)-1]
+    end
+    DrWatson.save(joinpath(_root, "mapping.h5"), mapping)
+    DrWatson.save(joinpath(_root, "info.h5"), exp_data)
+    DrWatson.save(joinpath(_root,"spikeinfo.h5"), @strdict exc = neurons_ranges[1] sst = neurons_ranges[2] pv = neurons_ranges[3])
+    return _root
+end
+
+function store_activity_data(_root::String, stage::String, sequence, model)
+    folder = joinpath(_root, stage) |> mkpath
+    @unpack stim = model
+    myspikes = vcat(spiketimes(model.pop.E), spiketimes(model.pop.I1), spiketimes(model.pop.I2))
+    myspikes = myspikes  |> d-> Dict("$n"=>d[n] for n in eachindex(d))
+    labels = let
+            stim_id =[]
+            stim_time = []
+            targets = Dict{String, Vector{Int}}()
+            for k in sequence.symbols.phonemes
+                    ph_stim = getfield(stim,Symbol(string(k)*"_d"))
+                    for interval in ph_stim.param.variables[:intervals]
+                            push!(stim_time, interval[1])
+                            push!(stim_id, k)
+                    end
+                    targets[string(k)] = ph_stim.cells
+            end
+            iid = sort(1:length(stim_id), by=x->stim_time[x])
+            labels = Dict{}()
+            for (k,t) in zip(stim_id[iid], stim_time[iid])
+                    labels[string(t)] = string(k)
+            end
+            labels
+    end
+    DrWatson.save(joinpath(folder,"labels.h5"), labels) 
+    DrWatson.save(joinpath(folder,"spiketimes.h5"), myspikes ) 
+
+    membrane, r_t = SNN.interpolated_record(model.pop.E, :v_s)
+    epoch_extrema =  cumsum([0,sequence.timestamps...])|> x-> [(x[n],(x[n+1])) for n in 1:length(x)-1]
+    @unpack ph_duration = sequence
+    for epoch in eachindex(epoch_extrema)
+            _start, _end = epoch_extrema[epoch]
+            offset = _start+ph_duration : ph_duration : _end-ph_duration
+            offset_delay = offset .+ ph_duration
+            mkpath(joinpath(folder, "membrane_end"))
+            membrane_path = joinpath(folder, "membrane_end", "epoch_$(epoch).npz")
+            _timepoints = offset
+            if offset_delay[end] < r_t[end]
+                    mem =  membrane[:,_timepoints]
+                    timestamps = _timepoints
+                    npzwrite(membrane_path, Dict("membrane" => mem,  "timestamp" => timestamps))
+            end
+            
+            mkpath(joinpath(folder, "membrane_delay"))
+            membrane_path = joinpath(folder, "membrane_delay", "epoch_$(epoch).npz") 
+            _timepoints = offset_delay
+            if offset_delay[end] < r_t[end]
+                    mem =  membrane[:,_timepoints]
+                    timestamps = _timepoints
+                    npzwrite(membrane_path, Dict("membrane" => mem,  "timestamp" => timestamps))
+            end
+    end
+end
+##
+
+export import_bioseq_tasks, seq_bioseq, bioseq_epochs, bioseq_lexicon, store_experiment_data, store_activity_data
