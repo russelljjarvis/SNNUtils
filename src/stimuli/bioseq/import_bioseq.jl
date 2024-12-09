@@ -57,7 +57,7 @@ function bioseq_lexicon(;experiment, duration::Float32=50.f0, kwargs...)
         push!(dictionary, Symbol(join(w))=>[Symbol(p) for p in w])
     end
     words = keys(dictionary) |> collect |> sort
-    phonemes = unique(Symbol.(experiments[1].info["task"]["g_strings"][1])) |> collect |> sort
+    phonemes = unique(Symbol.(experiment.info["task"]["g_strings"][1])) |> collect |> sort
     silence = :_
 
     @assert unique(phonemes) ==  union(vcat(values(dictionary)...)) "Phonemes do not match the dictionary"
