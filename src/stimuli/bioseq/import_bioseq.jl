@@ -1,5 +1,3 @@
-using JSON
-
 function import_bioseq_tasks(generator_path, task_path)
     task_list = []
     generators_list = []
@@ -21,11 +19,11 @@ function import_bioseq_tasks(generator_path, task_path)
         push!(generators_list, dict_data)
     end
 
-    experiment = []
+    experiments = []
     for (g, t) in zip(generators_list, task_list)
-        push!(experiment, (task=t,info=g))
+        push!(experiments, (task=t,info=g))
     end
-    return experiment
+    return experiments
 end
 
 function bioseq_epochs(experiment, stage)
@@ -103,3 +101,4 @@ function seq_bioseq(;experiment, stage::String, kwargs...)
 
 end
 
+export import_bioseq_tasks, seq_bioseq, bioseq_epochs, bioseq_lexicon
