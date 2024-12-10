@@ -108,7 +108,7 @@ function seq_bioseq(;experiment, stage::String, kwargs...)
 end
 
 
-function store_experiment_data(exp, network, seq)
+function store_experiment_data(path, exp, network, seq)
     ## Experiment data
     label = exp.info["label"]
     seed  = exp.info["seed_network"]
@@ -118,7 +118,7 @@ function store_experiment_data(exp, network, seq)
     exp_data = Dict(
             "seed"=> seed,
             "label"=> label,
-            "symbol_duration"=>sequence.ph_duration, 
+            "symbol_duration"=>seq.ph_duration, 
     )
     neurons_ranges = let 
             exc = network.pop.E.N
