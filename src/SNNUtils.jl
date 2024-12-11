@@ -18,8 +18,7 @@ using StatsBase
 using Statistics
 
 
-include("structs.jl")
-include("IO/base.jl")
+# include("structs.jl")
 include("stimuli/base.jl")
 include("models/models.jl")
 include("analysis/performance.jl")
