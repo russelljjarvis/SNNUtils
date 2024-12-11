@@ -270,10 +270,12 @@ function step_input_sequence(;
         variables = merge(parameters, Dict(:intervals=>sign_intervals(s, seq)))
         param = PSParam(rate=attack_decay, 
                     variables=variables)
+        push!(stim, s =>Dict{Symbol,Any}())
+        @show stim
         for t in targets
-            push!(stim, Symbol(string(s,"_",t))  => SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="w_$s", p_post=p_post))
+            push!(stim[s], t  => SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="w_$s", p_post=p_post))
             if !words
-                getfield(stim, Symbol(string(s,"_",t)) ).param.active[1] = false
+                stim[s][t].param.active[1] = false
             end
         end
     end
@@ -281,8 +283,10 @@ function step_input_sequence(;
         variables = merge(parameters, Dict(:intervals=>sign_intervals(s, seq)))
         param = PSParam(rate=attack_decay, 
                     variables=variables)
+        push!(stim, s =>Dict{Symbol,Any}())
         for t in targets
-            push!(stim,Symbol(string(s,"_",t))  => SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="$s", p_post=p_post) 
+            # ph = Symbol(string(s,"_",t))
+            push!(stim[s], t  => SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="$s", p_post=p_post) 
             )
         end
     end
@@ -295,13 +299,15 @@ function randomize_sequence!(;lexicon, model, targets::Vector{Symbol}, words=tru
     @unpack stim = model
     for target in targets
         for s in seq.symbols.words
-            getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, new_seq)
+            word =Symbol(string(s,"_",t)) 
+            get(stim, word, error("Access to non-existing word")).param.variables[:intervals] = sign_intervals(s, new_seq)
             if !words 
-                getfield(stim, Symbol(string(s,"_",target)) ).param.active[1] = false
+                get(stim, word, error("Access to non-existing word")).param.active[1] = false
             end
         end
         for s in lexicon.symbols.phonemes
-            getfield(stim, Symbol(string(s,"_",target)) ).param.variables[:intervals] = sign_intervals(s, new_seq)
+            ph = Symbol(string(s,"_",target))
+            get(stim, ph, error()).param.variables[:intervals] = sign_intervals(s, new_seq)
         end
     end
     return new_seq

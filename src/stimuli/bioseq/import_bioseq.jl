@@ -108,12 +108,21 @@ function seq_bioseq(;experiment, stage::String, kwargs...)
 end
 
 
+function root_path(path, exp)
+    label = exp.info["label"]
+    seed  = exp.info["seed_network"]
+    id    = exp.info["seed"] 
+    return joinpath(path, "id-$(id)_seed-$(seed)_$(label)") |> mkpath
+end
+
 function store_experiment_data(path, exp, network, seq)
+    ## Root
+    _root = root_path(path, exp)
+
     ## Experiment data
     label = exp.info["label"]
     seed  = exp.info["seed_network"]
     id    = exp.info["seed"] 
-    _root = joinpath(path, "id-$(id)_seed-$(seed)_$(label)") |> mkpath
     mapping = Dict(string(k)=>string.(v) for (k,v) in seq.dict)
     exp_data = Dict(
             "seed"=> seed,
@@ -132,31 +141,40 @@ function store_experiment_data(path, exp, network, seq)
     return _root
 end
 
-function store_activity_data(_root::String, stage::String, sequence, model)
+function store_activity_data(_root::String, stage::String, sequence, model; targets=[:d])
     folder = joinpath(_root, stage) |> mkpath
     @unpack stim = model
     myspikes = vcat(spiketimes(model.pop.E), spiketimes(model.pop.I1), spiketimes(model.pop.I2))
     myspikes = myspikes  |> d-> Dict("$n"=>d[n] for n in eachindex(d))
-    labels = let
+    labels, target_pops, = let
             stim_id =[]
             stim_time = []
-            targets = Dict{String, Vector{Int}}()
+            target_pops = Dict{String, Vector{Int}}()
             for k in sequence.symbols.phonemes
-                    ph_stim = getfield(stim,Symbol(string(k)*"_d"))
+                cells = []
+                for t in targets
+                    t = Symbol(string(k,"_",t))
+                    ph_stim = getfield(stim, t)
+                    push!(cells, ph_stim.cells)
+                end
+                push!(target_pops, string(k)=>Set(vcat(cells...))|> collect)
+            end
+            for k in sequence.symbols.phonemes
+                    ph_stim = getfield(stim,Symbol(string(k,"_",targets[1])))
                     for interval in ph_stim.param.variables[:intervals]
                             push!(stim_time, interval[1])
                             push!(stim_id, k)
                     end
-                    targets[string(k)] = ph_stim.cells
             end
             iid = sort(1:length(stim_id), by=x->stim_time[x])
             labels = Dict{}()
             for (k,t) in zip(stim_id[iid], stim_time[iid])
                     labels[string(t)] = string(k)
             end
-            labels
+            labels, target_pops
     end
     DrWatson.save(joinpath(folder,"labels.h5"), labels) 
+    DrWatson.save(joinpath(folder,"target_pops.h5"), target_pops) 
     DrWatson.save(joinpath(folder,"spiketimes.h5"), myspikes ) 
 
     membrane, r_t = SNN.interpolated_record(model.pop.E, :v_s)
@@ -187,4 +205,4 @@ function store_activity_data(_root::String, stage::String, sequence, model)
 end
 ##
 
-export import_bioseq_tasks, seq_bioseq, bioseq_epochs, bioseq_lexicon, store_experiment_data, store_activity_data
+export import_bioseq_tasks, seq_bioseq, bioseq_epochs, bioseq_lexicon, store_experiment_data, store_activity_data, root_path
