@@ -271,7 +271,6 @@ function step_input_sequence(;
         param = PSParam(rate=attack_decay, 
                     variables=variables)
         push!(stim, s =>Dict{Symbol,Any}())
-        @show stim
         for t in targets
             push!(stim[s], t  => SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="w_$s", p_post=p_post))
             if !words

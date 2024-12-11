@@ -1,10 +1,7 @@
-
-using MLJ
 using LIBSVM
-using StatsBase
-using Statistics
+using MLJ
 using CategoricalArrays
-
+    
 """
     SVCtrain(Xs, ys; seed=123, p=0.6)
     
