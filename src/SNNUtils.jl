@@ -13,10 +13,13 @@ using Dates
 using BSON
 using JSON
 using ThreadTools
+using RollingFunctions
+using StatsBase
+using Statistics
+
 
 include("structs.jl")
 include("IO/base.jl")
-include("analysis/base.jl")
 include("stimuli/base.jl")
 include("models/models.jl")
 include("analysis/performance.jl")
