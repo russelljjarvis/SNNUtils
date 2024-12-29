@@ -49,14 +49,36 @@ function residual_current(;λ=λ, kIE=kIE, L=L, NAR=NAR, Nd=Nd, currents=false, 
     end
 end
 
-function optimal_kei(L, rate; NAR=1.8, Nd=2, Vs=-55mV)
-    kIEs = range(0, stop=2, length=100)
-    residuals =zeros(length(kIEs))
-    for (i, kIE) in enumerate(kIEs)
-        residuals[i] = residual_current(λ=rate, kIE = kIE, L=L,NAR= NAR,Nd= Nd, currents=false, Vs=Vs)
+# function optimal_kei(L, rate; NAR=1.8, Nd=2, Vs=-52mV)
+# V    kIEs = range(0, stop=2, length=100)
+#     residuals =zeros(length(kIEs))
+#     for (i, kIE) in enumerate(kIEs)
+#         residuals[i] = residual_current(λ=rate, kIE = kIE, L=L,NAR= NAR,Nd= Nd, currents=false, Vs=Vs)
+#     end
+#     return kIEs[argmin(abs.(residuals))]
+# end
+
+function optimal_kei(l, NAR, Nd; kwargs...)
+    rates = exp10.(range(-2, stop=3, length=100))
+    [compute_kei(l, rate; NAR=NAR, Nd=Nd) for rate in rates]
+end
+
+function compute_kei(L, rate; NAR=1.8, Nd=2, Vs=-52mV)
+    @unpack gax, gm, gl, a, Vs, Vr, C, dend_syn, Nd = get_model(L, NAR, Nd, Vs=Vs)
+    ## Target dendritic voltage
+    Vd = (gl*(Vs - Vr) + a*(Vs - Vr))/(Nd*gax) + Vs
+
+    ## Currents
+    comp_curr = (-gax*(Vd - Vs) - gm*(Vd -Vr))
+    exc_syn_curr = map(dend_syn[1:2]) do syn
+        (- syn.gsyn *(syn.τd - syn.τr) * rate * (syn.nmda>0 ? nmda_curr(Vd) : 1f0) * (Vd - syn.E_rev))
     end
-    return kIEs[argmin(abs.(residuals))]
+    inh_syn_curr = map(dend_syn[3:4]) do syn
+        (- syn.gsyn *(syn.τd - syn.τr) * rate *  (Vd - syn.E_rev))
+    end
+    curr =  - (sum(exc_syn_curr) + sum(comp_curr))/sum(inh_syn_curr)
+    return maximum([0.0, curr])
 end
 
 
-export get_model, residual_current, optimal_kei
+export get_model, residual_current, optimal_kei, compute_kei
