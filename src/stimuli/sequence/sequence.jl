@@ -271,8 +271,10 @@ function symbolnames(seq)
     return (phonemes=phonemes, words=words)
 end
 
-function getcells(stim, symbol, target)
-    target = (target ==:s) || isnothing(target) ? "" : "_$target" |> target->Symbol(string(symbol, target ))
+function getcells(stim, symbol, target=nothing)
+    target = (target ==:s) || isnothing(target) ? "" : "_$target" 
+    target = Symbol(string(symbol, target ))
+    @show target
    return collect(Set(getfield(stim,target).cells))
 end
 
