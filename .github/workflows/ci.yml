@@ -48,7 +48,7 @@ jobs:
         run: |
           julia -e '
             import Pkg;
-            Pkg.test(path="."; force_latest_compatible_version=true);
+            Pkg.test(;force_latest_compatible_version=true);
           '
       # Step 6: Upload test results on failure
       - name: Upload test results
