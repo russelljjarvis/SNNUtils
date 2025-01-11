@@ -250,8 +250,9 @@ function step_input_sequence(;
     seq=nothing, # optionally provide a sequence    
     network::NamedTuple, # network object
     words::Bool,  # active or inactive word inputs
+    phonemes::Bool=true, # active or inactive phoneme inputs
     ## Projection parameters
-    targets::Vector{Symbol},  # target neuron's compartments
+    targets::Union{Vector{Symbol},Vector{Nothing}},  # target neuron's compartments
     p_post::Real,  # probability of post_synaptic projection
     peak_rate::Real, # peak rate of the stimulus
     start_rate::Real, # start rate of the stimulus
@@ -265,17 +266,22 @@ function step_input_sequence(;
 
     stim = Dict{Symbol,Any}()
     parameters = Dict(:decay=>decay_rate, :peak=>peak_rate, :start=>start_rate)
-
+    
     for s in seq.symbols.words
         variables = merge(parameters, Dict(:intervals=>sign_intervals(s, seq)))
         param = PSParam(rate=attack_decay, 
                     variables=variables)
-        push!(stim, s =>Dict{Symbol,Any}())
+        _my_targets = Dict{Symbol,Any}()
         for t in targets
-            push!(stim[s], t  => SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="w_$s", p_post=p_post))
-            if !words
-                stim[s][t].param.active[1] = false
-            end
+            key = isnothing(t) ? :v : t 
+            my_input = SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="$s", p_post=p_post) 
+            !words && (my_input.param.active[1] = false)
+            push!(_my_targets, key => my_input)
+        end
+        if length(_my_targets) > 1
+            push!(stim, s => _my_targets |> dict2ntuple)
+        else
+            push!(stim, s => first(_my_targets)[2])
         end
     end
     for s in seq.symbols.phonemes
@@ -283,14 +289,21 @@ function step_input_sequence(;
         param = PSParam(rate=attack_decay, 
                     variables=variables)
         push!(stim, s =>Dict{Symbol,Any}())
+        _my_targets = Dict{Symbol,Any}()
         for t in targets
-            # ph = Symbol(string(s,"_",t))
-            push!(stim[s], t  => SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="$s", p_post=p_post) 
-            )
+            key = isnothing(t) ? :v : t 
+            my_input = SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="$s", p_post=p_post) 
+            !phonemes && (my_input.param.active[1] = false)
+            push!(_my_targets, key => my_input)
+        end
+        if length(_my_targets) > 1
+            push!(stim, s => _my_targets |> dict2ntuple)
+        else
+            push!(stim, s => first(_my_targets)[2] )
         end
     end
-    stim = dict2ntuple(stim)
-    stim, seq
+    stim = stim |> dict2ntuple
+    return stim, seq
 end
 
 function randomize_sequence!(;lexicon, model, targets::Vector{Symbol}, words=true, kwargs...)
