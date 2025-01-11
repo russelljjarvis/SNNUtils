@@ -32,6 +32,7 @@ ThreadTools = "dbf13d8f-d36e-4350-8970-f3a99faba1a8"
 
 
 [compat]
+Unitful = "1.0"
 CategoricalArrays = "0.10.8"
 Interpolations = "0.15.1"
 JLD2 = "0.5.7"
