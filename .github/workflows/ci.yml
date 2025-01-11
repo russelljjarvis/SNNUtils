@@ -35,7 +35,7 @@ jobs:
           julia -e '
             import Pkg;
             # Add unregistered dependency from GitHub
-            Pkg.develop(PackageSpec(url="https://github.com/JuliaSNN/SpikingNeuralNetworks.jl"));
+            Pkg.develop(Pkg.PackageSpec(url="https://github.com/JuliaSNN/SpikingNeuralNetworks.jl"));
             # Install all dependencies listed in Project.toml
             Pkg.instantiate();
           '
