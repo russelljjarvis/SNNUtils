@@ -54,6 +54,7 @@ jobs:
             Pkg.update();
             Pkg.resolve();
             Pkg.instantiate();
+            Pkg.activate(".");
             Pkg.test()
           '
       # Step 6: Upload test results on failure
