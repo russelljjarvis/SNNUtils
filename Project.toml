@@ -1,7 +1,7 @@
 [project]
 name = "SNNUtils"
 uuid = "df079cdf-2344-43fe-90b5-fc41d8d26db7"
-authors = ["alequa <alessio.quaresima@pasteur.fr>"]
+authors = "alequa <alessio.quaresima@pasteur.fr>"
 version = "0.1.0"
 
 [deps]
