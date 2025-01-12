@@ -45,10 +45,15 @@ jobs:
       # Step 5: Run tests
       # Step 5: Run tests with force_latest_compatible_version=true
       - name: Run tests
-        run: |
           julia -e '
             import Pkg;
-            Pkg.test(;force_latest_compatible_version=true);
+            # Add unregistered dependency from GitHub
+            Pkg.develop(Pkg.PackageSpec(url="https://github.com/JuliaSNN/SpikingNeuralNetworks.jl"));
+            # Install all dependencies listed in Project.toml
+            Pkg.update();
+            Pkg.resolve();
+            Pkg.instantiate();
+            Pkg.test()
           '
       # Step 6: Upload test results on failure
       - name: Upload test results
