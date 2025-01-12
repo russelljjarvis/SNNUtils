@@ -45,6 +45,7 @@ jobs:
       # Step 5: Run tests
       # Step 5: Run tests with force_latest_compatible_version=true
       - name: Run tests
+        run: |
           julia -e '
             import Pkg;
             # Add unregistered dependency from GitHub
