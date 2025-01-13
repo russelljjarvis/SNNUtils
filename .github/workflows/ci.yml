@@ -30,7 +30,8 @@ jobs:
       # Step 3: Set up cache for dependencies
       - name: Setup cache
         uses: julia-actions/cache@v2
-
+      - name: Install unregistered package
+        run: julia -e 'using Pkg; Pkg.add(url="https://github.com/JuliaSNN/SpikingNeuralNetworks.jl.git")'
       - name: Install Dependencies
         uses: julia-actions/julia-buildpkg@v1
 
@@ -43,7 +44,7 @@ jobs:
           cd ${{ github.workspace }} && julia -e '
             import Pkg;
             # Add unregistered dependency from GitHub
-            Pkg.develop(Pkg.PackageSpec(url="https://github.com/JuliaSNN/SpikingNeuralNetworks.jl"));
+            Pkg.develop(Pkg.add(url="https://github.com/JuliaSNN/SpikingNeuralNetworks.jl.git"));
             # Install all dependencies listed in Project.toml
             Pkg.update();
             Pkg.resolve();
