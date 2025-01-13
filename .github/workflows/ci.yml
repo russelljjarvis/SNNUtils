@@ -17,7 +17,7 @@ jobs:
     steps:
       # Step 1: Check out the repository
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: .
 
@@ -25,14 +25,20 @@ jobs:
       - name: Set up Julia
         uses: julia-actions/setup-julia@latest
         with:
-          version: '1.9' # Specify the Julia version you need
+          version: '1' # Specify the Julia version you need
 
       # Step 3: Set up cache for dependencies
       - name: Setup cache
         uses: julia-actions/cache@v2
 
-      # Step 4: Install dependencies (registered and unregistered)
       - name: Install Dependencies
+        uses: julia-actions/julia-buildpkg@v1
+
+      - name: Run tests
+        uses: julia-actions/julia-runtest@v1
+        
+      # Step 4: Install dependencies (registered and unregistered)
+      - name: Dont Install Dependencies
         run: |
           cd ${{ github.workspace }} && julia -e '
             import Pkg;
@@ -47,7 +53,7 @@ jobs:
 
       # Step 5: Run tests
       # Step 5: Run tests with force_latest_compatible_version=true
-      - name: Run tests
+      - name: Dont Run tests
         run: |
           cd ${{ github.workspace }} && julia -e '
             import Pkg;
@@ -62,7 +68,7 @@ jobs:
             Pkg.test()
           '
       # Step 6: Upload test results on failure
-      - name: Upload test results
+      - name: Dont Upload test results
         if: failure()
         uses: actions/upload-artifact@v3
         with:
