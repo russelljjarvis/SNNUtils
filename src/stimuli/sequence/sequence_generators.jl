@@ -274,7 +274,7 @@ function step_input_sequence(;
         _my_targets = Dict{Symbol,Any}()
         for t in targets
             key = isnothing(t) ? :v : t 
-            my_input = SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="$s", p_post=p_post) 
+            my_input = SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="w_$s", p_post=p_post) 
             !words && (my_input.param.active[1] = false)
             push!(_my_targets, key => my_input)
         end
@@ -292,7 +292,7 @@ function step_input_sequence(;
         _my_targets = Dict{Symbol,Any}()
         for t in targets
             key = isnothing(t) ? :v : t 
-            my_input = SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="$s", p_post=p_post) 
+            my_input = SNN.PoissonStimulus(E, :he, t, μ=proj_strength, param=param, name="p_$s", p_post=p_post) 
             !phonemes && (my_input.param.active[1] = false)
             push!(_my_targets, key => my_input)
         end
@@ -325,7 +325,7 @@ function randomize_sequence!(;lexicon, model, targets::Vector{Symbol}, words=tru
     return new_seq
 end
 
-function update_sequence!(;seq, model, targets::Vector{Symbol}, words=true, kwargs...)
+function update_stimuli!(;seq, model, targets::Vector{Symbol}, words=true, kwargs...)
     @unpack stim = model
     for target in targets
         for s in seq.symbols.words
@@ -378,4 +378,4 @@ end
 # scatter(new_seq.sequence[1,:], seq.sequence[1,:], label="New sequence", c=:black, alpha=0.01, ms=10)
 
 
-export step_input_sequence, randomize_sequence!, dummy_input, attack_decay, update_sequence!, word_phonemes_sequence
+export step_input_sequence, randomize_sequence!, dummy_input, attack_decay, update_stimuli!, word_phonemes_sequence
