@@ -112,7 +112,7 @@ The function computes the activity of the spiking neural network model for each 
 ## Returns
 - `confusion_matrix`: The confusion matrix, normalized by the number of occurrences of each symbol in the sequence. The matrix has (predicted x true) dimensions.
 """
-function score_activity(model, seq, interval=[0ms, 100ms]; pop=:E)
+function score_activity(model, seq, interval=[0ms, 100ms]; pop=:E, targets=nothing)
     offsets, ys = all_intervals(:words, seq, interval=interval)
     S = spikecount_features(getfield(model.pop,pop), offsets)
     confusion_matrix= zeros(length(seq.symbols.words), length(seq.symbols.words))
@@ -124,7 +124,10 @@ function score_activity(model, seq, interval=[0ms, 100ms]; pop=:E)
         occurences[word_id] += 1
         for w in eachindex(seq.symbols.words)
             word_test = seq.symbols.words[w]
-            cells = getstim(model.stim, word_test, :d).cells
+            cells = []
+            for target in targets
+                append!(cells, getstim(model.stim, word_test, target).cells)
+            end
             activity[w] = mean(S[cells, y])
         end
         activated = argmax(activity)
