@@ -109,22 +109,35 @@ function sign_intervals(sign::Symbol, sequence)
 
     ## Find the intervals where the sign is present
     intervals = Vector{Vector{Float32}}()
-    cum_duration = cumsum(sequence[line_id.duration,:])
-    _end = 1
-    interval = [-1, -1]
+    # cum_duration = cumsum(sequence[line_id.duration,:])
+    # _end = 1
+    # interval = [-1, -1]
     my_seq = sequence[sign_line_id, :]
-    while !isnothing(_end)  || !isnothing(_start)
-        _start = findfirst(x -> x == sign, my_seq[_end:end])
-        if isnothing(_start)
-            break
+    time_counter = 0
+    for i in eachindex(my_seq)
+        interval_start = time_counter
+        if my_seq[i] == sign
+            interval_end = time_counter + sequence[line_id.duration, i]
         else
-            _start += _end-1
+            interval_end = time_counter
         end
-        _end  = findfirst(x -> x != sign, my_seq[_start:end]) + _start - 1
-        interval[1] = cum_duration[_start] - sequence[line_id.duration,_start]
-        interval[2] = cum_duration[_end-1]
-        push!(intervals, interval)
+        if  interval_end > interval_start
+            interval = [interval_start, interval_end]
+            push!(intervals, interval)
+        end
+        time_counter += sequence[line_id.duration, i]
     end
+    # while !isnothing(_end)  || !isnothing(_start)
+    #     _start = findfirst(x -> x == sign, my_seq[_end:end])
+    #     if isnothing(_start)
+    #         break
+    #     else
+    #         _start += _end-1
+    #     end
+    #     _end  = findfirst(x -> x != sign, my_seq[_start:end]) + _start - 1
+    #     interval[1] = cum_duration[_start] - sequence[line_id.duration,_start]
+    #     interval[2] = cum_duration[_end-1]
+    # end
     return intervals
 end
 
@@ -283,7 +296,8 @@ function getstim(stim, word, target)
 end
 
 function getstimsym(word, target)
-    return Symbol(string(word)*"_$target")
+    target = (target ==:s) || isnothing(target) ? "" : "_$target" 
+    return Symbol(string(word)*target)
 end
 
 export getstim, getstimsym
