@@ -168,11 +168,11 @@ function store_target_pops(_root, seq, stim, targets)
     return _root
 end
 
-function getstim(stim, field, target)
-    ph_stim = getfield(stim, field)
-    ph_stim = getfield(ph_stim, target)
-    return ph_stim
-end
+# function getstim(stim, field, target)
+#     ph_stim = getfield(stim, field)
+#     ph_stim = getfield(ph_stim, target)
+#     return ph_stim
+# end
 
 function store_labels(_root, stim, sequence, targets)
     folder = _root

@@ -29,6 +29,7 @@ function get_maxima(data)
     for x = 2:length(data)-1
         (data[x] > data[x-1]) && (data[x] > data[x+1]) && (push!(arg_maxima, x))
     end
+    @debug "Maxima: $(length(arg_maxima))"
     return arg_maxima
 end
 
@@ -37,8 +38,10 @@ function isbimodal(kernel, ratio)
     maxima = get_maxima(kernel)
     z = maximum(kernel[maxima])
     real = []
+    @debug length(maxima)
     for n in maxima
         m = kernel[n]
+        @debug "Maxima: $m, z: $z"
         if (abs(m / z) > ratio)
             push!(real, m)
         end
@@ -65,8 +68,8 @@ function count_maxima(kernel, ratio)
 end
 
 # Return the critical window (hence the bimodal factor)
-function critical_window(data; ratio = 0.3, max_b = 50, v_range = collect(-90:-35))
-    for h = 1:max_b
+function critical_window(data; ratio = 0.1, max_b = 50, v_range = collect(-90:-35))
+    for h = 1:2:max_b
         kernel = globalKDE(h, data, v_range = v_range)
         bimodal = false
         try
