@@ -147,22 +147,22 @@ function store_target_pops(_root, seq, stim, targets)
     folder = _root
     target_pops = Dict{String, Vector{Int}}()
     for k in seq.symbols.phonemes
-        cells = []
+        neurons = []
         for t in targets
             ph_stim = getfield(stim, k)
             ph_stim = getfield(ph_stim, t)
-            push!(cells, ph_stim.cells)
+            push!(neurons, ph_stim.neurons)
         end
-        push!(target_pops, string(k)=>Set(vcat(cells...))|> collect)
+        push!(target_pops, string(k)=>Set(vcat(neurons...))|> collect)
     end
     for k in seq.symbols.words
-        cells = []
+        neurons = []
         for t in targets
             ph_stim = getfield(stim, k)
             ph_stim = getfield(ph_stim, t)
-            push!(cells, ph_stim.cells)
+            push!(neurons, ph_stim.neurons)
         end
-        push!(target_pops, string(k)=>Set(vcat(cells...))|> collect)
+        push!(target_pops, string(k)=>Set(vcat(neurons...))|> collect)
     end
     DrWatson.save(joinpath(folder,"target_pops.h5"), target_pops) 
     return _root

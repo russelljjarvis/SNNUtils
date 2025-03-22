@@ -284,11 +284,11 @@ function symbolnames(seq)
     return (phonemes=phonemes, words=words)
 end
 
-function getcells(stim, symbol, target=nothing)
+function getneurons(stim, symbol, target=nothing)
     target = (target ==:s) || isnothing(target) ? "" : "_$target" 
     target = Symbol(string(symbol, target ))
     @show target
-   return collect(Set(getfield(stim,target).cells))
+   return collect(Set(getfield(stim,target).neurons))
 end
 
 function getstim(stim, word, target)
@@ -302,4 +302,4 @@ end
 
 export getstim, getstimsym
 
-export generate_sequence, sign_intervals, time_in_interval, sequence_end, generate_lexicon, start_interval, getdictionary, getduration, getphonemes, symbolnames, getcells, all_intervals
+export generate_sequence, sign_intervals, time_in_interval, sequence_end, generate_lexicon, start_interval, getdictionary, getduration, getphonemes, symbolnames, getneurons, all_intervals

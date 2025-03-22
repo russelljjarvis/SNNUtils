@@ -124,11 +124,11 @@ function score_activity(model, seq, interval=[0ms, 100ms]; pop=:E, targets=nothi
         occurences[word_id] += 1
         for w in eachindex(seq.symbols.words)
             word_test = seq.symbols.words[w]
-            cells = []
+            neurons = []
             for target in targets
-                append!(cells, getstim(model.stim, word_test, target).cells)
+                append!(neurons, getstim(model.stim, word_test, target).neurons)
             end
-            activity[w] = mean(S[cells, y])
+            activity[w] = mean(S[neurons, y])
         end
         activated = argmax(activity)
         confusion_matrix[activated, word_id] += 1
