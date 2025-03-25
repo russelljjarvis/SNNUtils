@@ -21,7 +21,7 @@ function SVCtrain(Xs, ys; seed=123, p=0.6)
     y = string.(ys)
     y = CategoricalVector(string.(ys))
     @assert length(y) == size(Xs, 2)
-    train, test = partition(eachindex(y), p, rng=seed)
+    train, test = partition(eachindex(y), p, rng=seed, stratify=y)
 
     ZScore = fit(StatsBase.ZScoreTransform, X[:,train], dims=2)
     Xtrain = StatsBase.transform(ZScore, X[:,train])
@@ -31,9 +31,10 @@ function SVCtrain(Xs, ys; seed=123, p=0.6)
 
     @assert size(Xtrain, 2) == length(ytrain)
     # classifier = svmtrain(Xtrain, ytrain)
-    SVMClassifier = MLJ.@load SVC pkg=LIBSVM
+    SVMClassifier = MLJ.@load SVC pkg=LIBSVM verbosity=0
     svm = SVMClassifier(kernel=LIBSVM.Kernel.Linear)
-    mach = machine(svm, Xtrain', ytrain, scitype_check_level=0) |> MLJ.fit!
+    mach = machine(svm, Xtrain', ytrain, scitype_check_level=0) 
+    MLJ.fit!(mach, verbosity=0)
 
     # Test model on the other half of the data.
     ŷ = MLJ.predict(mach, Xtest');
