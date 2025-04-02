@@ -51,7 +51,8 @@ Generate a sequence of words and phonemes based on the provided lexicon and conf
 A named tuple containing the lexicon information and the generated sequence.
 
 """
-function generate_sequence(seq_function::Function; init_silence=1s, lexicon::NamedTuple, kwargs...)
+function generate_sequence(seq_function::Function; init_silence=1s, lexicon::NamedTuple, seed=-1, kwargs...)
+    (seed > 0) && (Random.seed!(seed))
 
     words, phonemes, seq_length = seq_function(;
                         lexicon=lexicon,
