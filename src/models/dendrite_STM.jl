@@ -88,17 +88,17 @@ dendritic_stp_network = let
 
     )
     connectivity = (
-        EdE = (p = 0.2,  μ = 10.78, dist = Normal, σ = 1),
-        IfE = (p = 0.2,  μ = log(15.27),  dist = LogNormal, σ = 0.),
-        IsE = (p = 0.2,  μ = log(15.27),  dist = LogNormal, σ = 0.),
+        E_to_Ed = (p = 0.2,  μ = 10.78, dist = Normal, σ = 1),
+        E_to_If = (p = 0.2,  μ = log(15.27),  dist = LogNormal, σ = 0.),
+        E_to_Is = (p = 0.2,  μ = log(15.27),  dist = LogNormal, σ = 0.),
 
-        EIf = (p = 0.2,  μ = log(15.8), dist = LogNormal, σ = 0.),
-        IsIf = (p = 0.2, μ = log(0.83),  dist = LogNormal, σ = 0.),
-        IfIf = (p = 0.2, μ = log(16.2), dist = LogNormal, σ = 0.),
+        If_to_E = (p = 0.2,  μ = log(15.8), dist = LogNormal, σ = 0.),
+        If_to_Is = (p = 0.2, μ = log(0.83),  dist = LogNormal, σ = 0.),
+        If_to_If = (p = 0.2, μ = log(16.2), dist = LogNormal, σ = 0.),
 
-        EdIs = (p = 0.2, μ = log(15.8), dist = LogNormal, σ = 0.),
-        IfIs = (p = 0.2, μ = log(1.47), dist = LogNormal, σ = 0.),
-        IsIs = (p = 0.2, μ = log(16.2), dist = LogNormal, σ = 0.),
+        Is_to_Ed = (p = 0.2, μ = log(15.8), dist = LogNormal, σ = 0.),
+        Is_to_If = (p = 0.2, μ = log(1.47), dist = LogNormal, σ = 0.),
+        Is_to_Is = (p = 0.2, μ = log(16.2), dist = LogNormal, σ = 0.),
     )
 
     noise_params = let
