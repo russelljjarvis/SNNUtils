@@ -51,7 +51,8 @@ Generate a sequence of words and phonemes based on the provided lexicon and conf
 A named tuple containing the lexicon information and the generated sequence.
 
 """
-function generate_sequence(seq_function::Function; init_silence=1s, lexicon::NamedTuple, kwargs...)
+function generate_sequence(seq_function::Function; init_silence=1s, lexicon::NamedTuple, seed=-1, kwargs...)
+    (seed > 0) && (Random.seed!(seed))
 
     words, phonemes, seq_length = seq_function(;
                         lexicon=lexicon,
@@ -284,11 +285,11 @@ function symbolnames(seq)
     return (phonemes=phonemes, words=words)
 end
 
-function getcells(stim, symbol, target=nothing)
+function getneurons(stim, symbol, target=nothing)
     target = (target ==:s) || isnothing(target) ? "" : "_$target" 
     target = Symbol(string(symbol, target ))
     @show target
-   return collect(Set(getfield(stim,target).cells))
+   return collect(Set(getfield(stim,target).neurons))
 end
 
 function getstim(stim, word, target)
@@ -302,4 +303,4 @@ end
 
 export getstim, getstimsym
 
-export generate_sequence, sign_intervals, time_in_interval, sequence_end, generate_lexicon, start_interval, getdictionary, getduration, getphonemes, symbolnames, getcells, all_intervals
+export generate_sequence, sign_intervals, time_in_interval, sequence_end, generate_lexicon, start_interval, getdictionary, getduration, getphonemes, symbolnames, getneurons, all_intervals

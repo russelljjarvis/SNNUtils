@@ -21,7 +21,7 @@ function SVCtrain(Xs, ys; seed=123, p=0.6)
     y = string.(ys)
     y = CategoricalVector(string.(ys))
     @assert length(y) == size(Xs, 2)
-    train, test = partition(eachindex(y), p, rng=seed)
+    train, test = partition(eachindex(y), p, rng=seed, stratify=y)
 
     ZScore = fit(StatsBase.ZScoreTransform, X[:,train], dims=2)
     Xtrain = StatsBase.transform(ZScore, X[:,train])
@@ -31,9 +31,10 @@ function SVCtrain(Xs, ys; seed=123, p=0.6)
 
     @assert size(Xtrain, 2) == length(ytrain)
     # classifier = svmtrain(Xtrain, ytrain)
-    SVMClassifier = MLJ.@load SVC pkg=LIBSVM
+    SVMClassifier = MLJ.@load SVC pkg=LIBSVM verbosity=0
     svm = SVMClassifier(kernel=LIBSVM.Kernel.Linear)
-    mach = machine(svm, Xtrain', ytrain, scitype_check_level=0) |> MLJ.fit!
+    mach = machine(svm, Xtrain', ytrain, scitype_check_level=0) 
+    MLJ.fit!(mach, verbosity=0)
 
     # Test model on the other half of the data.
     ŷ = MLJ.predict(mach, Xtest');
@@ -124,11 +125,11 @@ function score_activity(model, seq, interval=[0ms, 100ms]; pop=:E, targets=nothi
         occurences[word_id] += 1
         for w in eachindex(seq.symbols.words)
             word_test = seq.symbols.words[w]
-            cells = []
+            neurons = []
             for target in targets
-                append!(cells, getstim(model.stim, word_test, target).cells)
+                append!(neurons, getstim(model.stim, word_test, target).neurons)
             end
-            activity[w] = mean(S[cells, y])
+            activity[w] = mean(S[neurons, y])
         end
         activated = argmax(activity)
         confusion_matrix[activated, word_id] += 1

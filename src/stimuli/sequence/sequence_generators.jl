@@ -26,7 +26,6 @@ function word_phonemes_sequence(;
     kwargs...
 )
 
-
     @unpack dict, symbols, silence, ph_duration = lexicon
     if seed !== nothing
         Random.seed!(seed)
